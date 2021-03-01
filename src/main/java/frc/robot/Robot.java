@@ -872,6 +872,70 @@ public class Robot extends TimedRobot {
         pc_Right1.setReference(-1000, ControlType.kVelocity);
         pc_Right2.setReference(-1000, ControlType.kVelocity);
       }
+     public void smartTurn(String direction, double robotSpeed, double targetAngle, double turnSpeed) {
+      // Flip checked to true after one iteration, prevents continuous checking
+      if (checkedYaw == false) {
+        navX.zeroYaw();
+        checkedYaw = true;
+      }
+      
+      //continuously check yaw offset since last zeroYaw set to 0
+      double currentYaw = navX.getYaw() % 360;
+      System.out.println("Current yaw: " + currentYaw);
+      System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
+      /*
+      pseudo code:
+      we need the OUTSIDE TRAVEL DISTANCE and the RADIUS BETWEEN THE WHEELS.
+      Calculation to find the angle traveled: https://www.google.com/url?sa=i&url=http%3A%2F%2Fwww.1728.org%2Fradians.htm&psig=AOvVaw2XZpr1Ro6lgzD6xxkGbHcO&ust=1612991533178000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCNC-4u3b3e4CFQAAAAAdAAAAABAJ
+      To calculate:
+        encoder distance/distance between the two wheels = angle of how far the robot turned in RADIANS.
+      */
+
+      //begin checki
+      if (Math.abs(currentYaw) < targetAngle) {
+        double normalSpeed;
+        double turnWheelSpeed;
+        switch (direction) {
+          case "Right":
+          case "right":
+          case "R":
+          case "r":
+            System.out.println("right");
+            normalSpeed = robotSpeed;
+            turnWheelSpeed = robotSpeed + turnSpeed;
+            pc_Left1.setReference(turnWheelSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(turnWheelSpeed, ControlType.kVelocity);
+            pc_Right1.setReference(-normalSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-normalSpeed, ControlType.kVelocity);
+            break;
+          case "Left":
+          case "left":
+          case "L":
+          case "l":
+            System.out.println("left");
+            normalSpeed = robotSpeed;
+            turnWheelSpeed = robotSpeed + turnSpeed;
+            pc_Left1.setReference(normalSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(normalSpeed, ControlType.kVelocity);
+            pc_Right1.setReference(-turnWheelSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-turnWheelSpeed, ControlType.kVelocity);
+            break;
+          default:
+            System.out.println("You did not give a direction.");
+        }
+      }
+      else if (Math.abs(currentYaw) >= targetAngle) {
+        System.out.println("Finished.");
+        m_DriveTrain.stopMotor();
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        checkedYaw = false;
+        autoCounter++;
+      };
+      
+    }
     }
     
     //endregion
