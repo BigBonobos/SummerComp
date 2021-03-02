@@ -466,33 +466,36 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    
-    switch (autoCounter) {
-      case 0:
-        smartTurn("left", 500, 60, 500);
-        break;
-      case 1:
-        smartTurn("right", 500, 60, 500);
-        break;
-      case 2:
-        smartTurn("right", 1000, 130, 250);
-        break;
-      case 3:
-        smartTurn("left", 500, 160, 750);
-        break;
-      case 4:
-        smartTurn("left", 500, 180, 750);
-        break;
-      case 5:
-        smartTurn("right", 500, 20, 500);
-        break;
-      case 6:
-        smartTurn("right", 1000, 130, 250);
-        break;
-      case 7:
-        smartTurn("left", 500, 60, 500);
-        break;
+    if (autoCounter == 0) {
+      extraSmartTurn("left", 30, 1, 5);
     }
+
+    // switch (autoCounter) {
+    //   case 0:
+    //     smartTurn("left", 60, 500, 500);
+    //     break;
+    //   case 1:
+    //     smartTurn("right", 60, 500, 500);
+    //     break;
+    //   case 2:
+    //     smartTurn("right", 130, 1000, 250);
+    //     break;
+    //   case 3:
+    //     smartTurn("left", 160, 500, 750);
+    //     break;
+    //   case 4:
+    //     smartTurn("left", 180, 500, 750);
+    //     break;
+    //   case 5:
+    //     smartTurn("right", 20, 500, 500);
+    //     break;
+    //   case 6:
+    //     smartTurn("right", 130, 1000, 250);
+    //     break;
+    //   case 7:
+    //     smartTurn("left", 60, 500, 500);
+    //     break;
+    //   }
     }
     
     climb();
@@ -895,26 +898,126 @@ public class Robot extends TimedRobot {
         pc_Right1.setReference(-1000, ControlType.kVelocity);
         pc_Right2.setReference(-1000, ControlType.kVelocity);
       }
-     public void smartTurn(String direction, double robotSpeed, double targetAngle, double turnSpeed) {
+
+
+      public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
+        // Flip checked to true after one iteration, prevents continuous checking
+        if (checkedYaw == false) {
+          navX.zeroYaw();
+          checkedYaw = true;
+        }
+  
+  
+        //continuously check yaw offset since last zeroYaw set to 0
+        double currentYaw = navX.getYaw() % 360;
+        System.out.println("Current yaw: " + currentYaw);
+        System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
+        /*
+        Radius Calculation:
+        outsideWheelSpeed = (robotSpeed + turnSpeed) 
+        insideWheelSpeed = robotSpeed
+  
+                 outsideWheelSpeed + insideWheelSpeed
+        Radius = ------------------------------------ * distance between the wheels
+                 outsideWheelSpeed - insideWheelSpeed
+  
+        
+                          (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
+        insideWheel =   - ------------------------------------------------------ , 
+                                       WANTED RADIUS + width
+  
+        */
+  
+
+        double targetSpeed = fps * (30 * Math.PI)
+        //double insideWheelSpeed = - ((((25/12) * fps) - (targetRadius * fps)) / (targetRadius + (25/12)))
+        double insideWheelSpeed = (fps - ((25/12) * targetRadius)) * (30 * Math.PI)
+
+        
+        if (Math.abs(currentYaw) < targetAngle) {
+          switch (direction) {
+            case "Right":
+            case "right":
+            case "R":
+            case "r":
+              System.out.println("right");
+              normalSpeed = robotSpeed;
+              turnWheelSpeed = robotSpeed + turnSpeed;
+              // faster (outside)
+              pc_Left1.setReference(targetSpeed, ControlType.kVelocity);
+              pc_Left2.setReference(targetSpeed, ControlType.kVelocity);
+              //slower (inside)
+              pc_Right1.setReference(-insideWheelSpeed, ControlType.kVelocity);
+              pc_Right2.setReference(-insideWheelSpeed, ControlType.kVelocity);
+              break;
+            case "Left":
+            case "left":
+            case "L":
+            case "l":
+              System.out.println("left");
+              normalSpeed = robotSpeed;
+              turnWheelSpeed = robotSpeed + turnSpeed;
+              //faster (outside)
+              pc_Right1.setReference(-targetSpeed, ControlType.kVelocity);
+              pc_Right2.setReference(-targetSpeed, ControlType.kVelocity);
+              //slower (inside)
+              pc_Left1.setReference(insideWheelSpeed, ControlType.kVelocity);
+              pc_Left2.setReference(insideWheelSpeed, ControlType.kVelocity);
+              
+              break;
+            default:
+              System.out.println("You did not give a direction.");
+          }
+        }
+        else if (Math.abs(currentYaw) >= targetAngle) {
+          System.out.println("Finished.");
+          m_DriveTrain.stopMotor();
+          e_Right1.setPosition(0);
+          e_Right2.setPosition(0);
+          e_Left1.setPosition(0);
+          e_Left2.setPosition(0);
+          checkedYaw = false;
+          autoCounter++;
+        };
+        
+      }
+      }
+
+
+
+     public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
       // Flip checked to true after one iteration, prevents continuous checking
       if (checkedYaw == false) {
         navX.zeroYaw();
         checkedYaw = true;
       }
       
+
+
+
+
+
       //continuously check yaw offset since last zeroYaw set to 0
       double currentYaw = navX.getYaw() % 360;
       System.out.println("Current yaw: " + currentYaw);
       System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
       /*
-      pseudo code:
-      we need the OUTSIDE TRAVEL DISTANCE and the RADIUS BETWEEN THE WHEELS.
-      Calculation to find the angle traveled: https://www.google.com/url?sa=i&url=http%3A%2F%2Fwww.1728.org%2Fradians.htm&psig=AOvVaw2XZpr1Ro6lgzD6xxkGbHcO&ust=1612991533178000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCNC-4u3b3e4CFQAAAAAdAAAAABAJ
-      To calculate:
-        encoder distance/distance between the two wheels = angle of how far the robot turned in RADIANS.
+      Radius Calculation:
+      outsideWheelSpeed = (robotSpeed + turnSpeed) 
+      insideWheelSpeed = robotSpeed
+
+               outsideWheelSpeed + insideWheelSpeed
+      Radius = ------------------------------------ * distance between the wheels
+               outsideWheelSpeed - insideWheelSpeed
+
+      
+                        (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
+      insideWheel =   - ------------------------------------------------------ , 
+                                     WANTED RADIUS + width
+
       */
 
-      //begin checki
+      
       if (Math.abs(currentYaw) < targetAngle) {
         double normalSpeed;
         double turnWheelSpeed;
