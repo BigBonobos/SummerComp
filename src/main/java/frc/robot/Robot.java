@@ -467,9 +467,32 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     
-    if (autoCounter == 0){
-      rightTurn(90);
-      //driveStraight(5, 2000);
+    switch (autoCounter) {
+      case 0:
+        smartTurn("left", 500, 60, 500);
+        break;
+      case 1:
+        smartTurn("right", 500, 60, 500);
+        break;
+      case 2:
+        smartTurn("right", 1000, 130, 250);
+        break;
+      case 3:
+        smartTurn("left", 500, 160, 750);
+        break;
+      case 4:
+        smartTurn("left", 500, 180, 750);
+        break;
+      case 5:
+        smartTurn("right", 500, 20, 500);
+        break;
+      case 6:
+        smartTurn("right", 1000, 130, 250);
+        break;
+      case 7:
+        smartTurn("left", 500, 60, 500);
+        break;
+    }
     }
     
     climb();
