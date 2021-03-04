@@ -498,7 +498,7 @@ public class Robot extends TimedRobot {
       driveStraight(10.5, 1000);
     }
     else if (autoCounter == 1) {
-      Clockwise(390, 500);
+      SmartClockwise(360, 1, 500);
     }
     /*else if (autoCounter == 2) { 
       leftTurn(33.7);
@@ -507,7 +507,7 @@ public class Robot extends TimedRobot {
       driveStraight(8, 1000);
     }
     else if (autoCounter == 3) {
-      CounterClockwise(315, 500);
+      SmartCounterClockwise(290, 1, 500);
     }
     /*else if (autoCounter == 4) {
       rightTurn(45);
@@ -516,7 +516,7 @@ public class Robot extends TimedRobot {
       driveStraight(7.75, 1000);
     }
     else if (autoCounter == 5) {
-      CounterClockwise(200, 500);
+      SmartClockwise(270, 1, 500);
     }
     else if (autoCounter == 6) {
       driveStraight(25, 1000);
@@ -635,15 +635,14 @@ else{
         autoCounter ++;
       }
   }
-
-  public void CounterClockwise(double degrees, double speed){
-    double innerDistance = -(10.5647 * 6.095233693);
+  public void SmartCounterClockwise(double degrees, double radius, double speed){
+    double innerDistance = (2*Math.PI*radius * 6.095233693)*(degrees/360);
     SmartDashboard.putNumber("innerDistance", innerDistance);
-    if(e_Right1.getPosition() > innerDistance || e_Right2.getPosition() > innerDistance){
-      pc_Left1.setReference(speed*1.616177, ControlType.kVelocity);
-      pc_Left2.setReference(speed*1.616177, ControlType.kVelocity);
-      pc_Right1.setReference(-speed, ControlType.kVelocity);
-      pc_Right2.setReference(-speed, ControlType.kVelocity);
+    if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
+      pc_Left1.setReference(speed, ControlType.kVelocity);
+      pc_Left2.setReference(speed, ControlType.kVelocity);
+      pc_Right1.setReference(-speed*(1+(25/(12*radius))), ControlType.kVelocity);
+      pc_Right2.setReference(-speed*(1+(25/(12*radius))), ControlType.kVelocity);
       //difference between outer and inner wheel is 25 inches
       //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
  
@@ -664,13 +663,13 @@ else{
       autoCounter++;
      }
     }
-  
-  public void Clockwise(double degrees, double speed){
-    double innerDistance = -(10 * 6.095233693)*(degrees/360);
+
+  public void SmartClockwise (double degrees, double radius, double speed) {
+    double innerDistance = -(2*Math.PI*radius*6.095233693)*(degrees/360);
     SmartDashboard.putNumber("innerDistance", innerDistance);
     if(e_Right1.getPosition() > innerDistance || e_Right2.getPosition() > innerDistance){
-      pc_Left1.setReference(speed*3.0833333, ControlType.kVelocity);
-      pc_Left2.setReference(speed*3.0833333, ControlType.kVelocity);
+      pc_Left1.setReference(speed*(1+(25/(12*radius))), ControlType.kVelocity);
+      pc_Left2.setReference(speed*(1+(25/(12*radius))), ControlType.kVelocity);
       pc_Right1.setReference(-speed, ControlType.kVelocity);
       pc_Right2.setReference(-speed, ControlType.kVelocity);
       //difference between outer and inner wheel is 25 inches
@@ -692,7 +691,7 @@ else{
 
       autoCounter++;
      }
-   }
+  }
   
   //region_Methods
     public void gettingVision(){
