@@ -492,7 +492,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("yaw", navX.getYaw() % 360);
   }
   
-  public void CourseOne(){
+  public void CourseOne(){  
     //autocounters are necessary so the bot does the methods in order; or else it will everything at once
     if (autoCounter == 0) {
       driveStraight(10.5, 1000);
@@ -524,36 +524,145 @@ public class Robot extends TimedRobot {
 
 else{
   m_DriveTrain.stopMotor();
-}
+    }
   }
-  
-  public void CounterClockwise(double degrees, double speed){
-    double innerDistance = (10 * 6.095233693)*(degrees/360);
-    //universal radius of 1 foot
+
+  public void CourseThree(){
+    if (autoCounter == 0){
+      CourseThree_PhaseOne(500);
+    }
+    else if (autoCounter == 1){
+      CourseThree_PhaseTwo(500);
+    }
+    else if (autoCounter == 2){
+      rightTurn(90);
+    }
+    else if (autoCounter == 3){
+      driveStraight(10, 500);
+    }
+    else if (autoCounter == 4){
+      driveBack(10, 500);
+    }
+    else if (autoCounter == 5){
+      rightTurn(90);
+    }
+    else if (autoCounter == 6){
+      driveStraight(7.5, 500);
+    }
+    else if (autoCounter ==7){
+      CourseThree_PhaseFinal(500);
+    }
+    
+    else{
+      m_DriveTrain.stopMotor();
+    }
+  }
+
+  public void CourseThree_PhaseOne (double speed){
+    double innerDistance = (3.0125 * 6.095233693);
     SmartDashboard.putNumber("innerDistance", innerDistance);
      if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
-        pc_Right1.setReference(-speed*3.0833333, ControlType.kVelocity);
-        pc_Right2.setReference(-speed*3.0833333, ControlType.kVelocity);  
-        //difference between outer and inner wheel is 25 inches
-        //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
+        pc_Right1.setReference(-speed*3.077, ControlType.kVelocity);
+        pc_Right2.setReference(-speed*3.077, ControlType.kVelocity);  
+        
      }
       else{
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
         pc_Right1.setReference(0, ControlType.kVelocity);
         pc_Right2.setReference(0, ControlType.kVelocity);
-        //so the robot stops immediatly, and its momentum does not contine
         
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
         e_Right1.setPosition(0);
         e_Right2.setPosition(0);
-        //resets the encoder counts for the following methods
+        
 
         autoCounter ++;
       }
+  }
+
+  public void CourseThree_PhaseTwo(double speed) {
+    double innerDistance = (3.0125 * 6.095233693);
+    SmartDashboard.putNumber("innerDistance", innerDistance);
+     if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
+        pc_Left1.setReference(speed, ControlType.kVelocity);
+        pc_Left2.setReference(speed, ControlType.kVelocity);
+        pc_Right1.setReference(-speed*3.077, ControlType.kVelocity);
+        pc_Right2.setReference(-speed*3.077, ControlType.kVelocity);  
+        
+     }
+      else{
+        pc_Left1.setReference(0, ControlType.kVelocity);
+        pc_Left2.setReference(0, ControlType.kVelocity);
+        pc_Right1.setReference(0, ControlType.kVelocity);
+        pc_Right2.setReference(0, ControlType.kVelocity);
+        
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        
+
+        autoCounter ++;
+      }
+  }
+
+  public void CourseThree_PhaseFinal(double speed){
+    double innerDistance = (3.0125 * 6.095233693);
+    SmartDashboard.putNumber("innerDistance", innerDistance);
+     if(e_Right1.getPosition() < innerDistance || e_Right2.getPosition() < innerDistance){
+        pc_Left1.setReference(-speed*3.077, ControlType.kVelocity);
+        pc_Left2.setReference(-speed*3.077, ControlType.kVelocity);
+        pc_Right1.setReference(speed, ControlType.kVelocity);
+        pc_Right2.setReference(speed, ControlType.kVelocity);  
+        
+     }
+      else{
+        pc_Left1.setReference(0, ControlType.kVelocity);
+        pc_Left2.setReference(0, ControlType.kVelocity);
+        pc_Right1.setReference(0, ControlType.kVelocity);
+        pc_Right2.setReference(0, ControlType.kVelocity);
+        
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        
+
+        autoCounter ++;
+      }
+  }
+
+  public void CounterClockwise(double degrees, double speed){
+    double innerDistance = -(10.5647 * 6.095233693);
+    SmartDashboard.putNumber("innerDistance", innerDistance);
+    if(e_Right1.getPosition() > innerDistance || e_Right2.getPosition() > innerDistance){
+      pc_Left1.setReference(speed*1.616177, ControlType.kVelocity);
+      pc_Left2.setReference(speed*1.616177, ControlType.kVelocity);
+      pc_Right1.setReference(-speed, ControlType.kVelocity);
+      pc_Right2.setReference(-speed, ControlType.kVelocity);
+      //difference between outer and inner wheel is 25 inches
+      //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
+ 
+     }
+     else{
+      pc_Left1.setReference(0, ControlType.kVelocity);
+      pc_Left2.setReference(0, ControlType.kVelocity);
+      pc_Right1.setReference(0, ControlType.kVelocity);
+      pc_Right2.setReference(0, ControlType.kVelocity);
+      //so the robot stops immediatly, and its momentum does not contine
+
+      e_Left1.setPosition(0);
+      e_Left2.setPosition(0);
+      e_Right1.setPosition(0);
+      e_Right2.setPosition(0);
+      //resets the encoder counts for the following methods
+
+      autoCounter++;
+     }
     }
   
   public void Clockwise(double degrees, double speed){
@@ -918,6 +1027,27 @@ else{
         pc_Left2.setReference(speed, ControlType.kVelocity);
         pc_Right1.setReference(-speed, ControlType.kVelocity);
         pc_Right2.setReference(-speed, ControlType.kVelocity);
+      }
+      else{
+        m_DriveTrain.stopMotor();
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        //resets the encoder counts for the following methods
+
+        autoCounter ++;
+
+      }
+    }
+
+    public void driveBack(double feet, double speed){
+      double encoderFeet = feet * 6.095233693;
+      if(e_Left1.getPosition() > -encoderFeet || e_Left2.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet || e_Right2.getPosition() < encoderFeet){
+        pc_Left1.setReference(-speed, ControlType.kVelocity);
+        pc_Left2.setReference(-speed, ControlType.kVelocity);
+        pc_Right1.setReference(speed, ControlType.kVelocity);
+        pc_Right2.setReference(speed, ControlType.kVelocity);
       }
       else{
         m_DriveTrain.stopMotor();
