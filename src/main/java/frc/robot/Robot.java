@@ -181,6 +181,7 @@ public class Robot extends TimedRobot {
       //variables for auto phase
         public int autoCase;
         public int autoCounter = 0;
+        public boolean resetYaw = false;
 
 
   //endregion
@@ -488,37 +489,39 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("right2", e_Right2.getPosition());
     SmartDashboard.putNumber("left1", e_Left1.getPosition());
     SmartDashboard.putNumber("left2", e_Left2.getPosition());
+    SmartDashboard.putNumber("yaw", navX.getYaw() % 360);
   }
   
   public void CourseOne(){
+    //autocounters are necessary so the bot does the methods in order; or else it will everything at once
     if (autoCounter == 0) {
-      driveStraight(3, 500);
+      driveStraight(10.5, 1000);
     }
     else if (autoCounter == 1) {
-      Clockwise(360, 500);
+      Clockwise(390, 500);
     }
-    else if (autoCounter == 2) {
+    /*else if (autoCounter == 2) { 
       leftTurn(33.7);
-    }/*
-    if (autoCounter == 3) {
-      driveStraight(9, 1000);
+    }*/
+    else if (autoCounter == 2) {
+      driveStraight(8, 1000);
     }
-    if (autoCounter == 4) {
-      CounterClockwise(360, 750);
+    else if (autoCounter == 3) {
+      CounterClockwise(315, 500);
     }
-    if (autoCounter == 5) {
+    /*else if (autoCounter == 4) {
       rightTurn(45);
+    }*/
+    else if (autoCounter == 4) {
+      driveStraight(7.75, 1000);
     }
-    if (autoCounter == 6) {
-      driveStraight(7, 1000);
+    else if (autoCounter == 5) {
+      CounterClockwise(200, 500);
     }
-    if (autoCounter == 7) {
-      CounterClockwise(270, 750);
-    }
-    if (autoCounter == 8) {
+    else if (autoCounter == 6) {
       driveStraight(25, 1000);
     }
-*/
+
 else{
   m_DriveTrain.stopMotor();
 }
@@ -526,23 +529,28 @@ else{
   
   public void CounterClockwise(double degrees, double speed){
     double innerDistance = (10 * 6.095233693)*(degrees/360);
+    //universal radius of 1 foot
     SmartDashboard.putNumber("innerDistance", innerDistance);
      if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
         pc_Right1.setReference(-speed*3.0833333, ControlType.kVelocity);
         pc_Right2.setReference(-speed*3.0833333, ControlType.kVelocity);  
+        //difference between outer and inner wheel is 25 inches
+        //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
      }
       else{
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
         pc_Right1.setReference(0, ControlType.kVelocity);
         pc_Right2.setReference(0, ControlType.kVelocity);
-
+        //so the robot stops immediatly, and its momentum does not contine
+        
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
         e_Right1.setPosition(0);
         e_Right2.setPosition(0);
+        //resets the encoder counts for the following methods
 
         autoCounter ++;
       }
@@ -556,6 +564,8 @@ else{
       pc_Left2.setReference(speed*3.0833333, ControlType.kVelocity);
       pc_Right1.setReference(-speed, ControlType.kVelocity);
       pc_Right2.setReference(-speed, ControlType.kVelocity);
+      //difference between outer and inner wheel is 25 inches
+      //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
  
      }
      else{
@@ -563,11 +573,13 @@ else{
       pc_Left2.setReference(0, ControlType.kVelocity);
       pc_Right1.setReference(0, ControlType.kVelocity);
       pc_Right2.setReference(0, ControlType.kVelocity);
+      //so the robot stops immediatly, and its momentum does not contine
 
       e_Left1.setPosition(0);
       e_Left2.setPosition(0);
       e_Right1.setPosition(0);
       e_Right2.setPosition(0);
+      //resets the encoder counts for the following methods
 
       autoCounter++;
      }
@@ -913,6 +925,7 @@ else{
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
+        //resets the encoder counts for the following methods
 
         autoCounter ++;
 
@@ -921,8 +934,11 @@ else{
 
     
     public void rightTurn(double targetAngle){
-      double actualYaw = navX.getYaw() % 360;
-
+      if(resetYaw == false){
+        navX.zeroYaw();
+        resetYaw = true;
+      }
+      double actualYaw = Math.abs(navX.getYaw() % 360);
       if (Math.abs(actualYaw - targetAngle) < 8){
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
@@ -932,24 +948,26 @@ else{
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
+        navX.reset();
+        autoCounter++; 
       }
       else{
-        m_Left.set(.4);
-        m_Right.set(.4);
+        pc_Left1.setReference(1000, ControlType.kVelocity);
+        pc_Left2.setReference(1000, ControlType.kVelocity);
+        pc_Right1.setReference(1000, ControlType.kVelocity);
+        pc_Right2.setReference(1000, ControlType.kVelocity);
 
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-
-        autoCounter ++;
       }
 
     }
 
     public void leftTurn(double targetAngle){
-      double actualYaw = navX.getYaw() % 360;
-      if (Math.abs(actualYaw - targetAngle) < 8){
+      if(resetYaw == false){
+        navX.zeroYaw();
+        resetYaw = true;
+      }
+      double actualYaw = Math.abs(navX.getYaw() % 360);
+      if (Math.abs(actualYaw - targetAngle) < 6){
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
         pc_Right1.setReference(0, ControlType.kVelocity);
@@ -958,19 +976,14 @@ else{
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
+        resetYaw = false;
+        autoCounter ++;
       }
       else{
         pc_Left1.setReference(-1000, ControlType.kVelocity);
         pc_Left2.setReference(-1000, ControlType.kVelocity);
         pc_Right1.setReference(-1000, ControlType.kVelocity);
         pc_Right2.setReference(-1000, ControlType.kVelocity);
-
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-
-        autoCounter ++;
       }
     }
     
