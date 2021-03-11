@@ -495,31 +495,26 @@ public class Robot extends TimedRobot {
   public void CourseOne(){  
     //autocounters are necessary so the bot does the methods in order; or else it will everything at once
     if (autoCounter == 0) {
-      driveStraight(10.5, 1000);
+      driveStraight(9.5, 1000);
     }
     else if (autoCounter == 1) {
-      SmartClockwise(360, 1, 500);
+      SmartClockwise(600, 1, 500);
     }
-    /*else if (autoCounter == 2) { 
-      leftTurn(33.7);
-    }*/
+    
     else if (autoCounter == 2) {
-      driveStraight(8, 1000);
+      driveStraight(8.4, 1000);
     }
     else if (autoCounter == 3) {
-      SmartCounterClockwise(290, 1, 500);
+      SmartCounterClockwise(510, 1, 500);
     }
-    /*else if (autoCounter == 4) {
-      rightTurn(45);
-    }*/
     else if (autoCounter == 4) {
       driveStraight(7.75, 1000);
     }
     else if (autoCounter == 5) {
-      SmartClockwise(270, 1, 500);
+      SmartCounterClockwise(314, 1, 500);
     }
     else if (autoCounter == 6) {
-      driveStraight(25, 1000);
+      driveStraight(22, 1000);
     }
 
 else{
@@ -541,16 +536,16 @@ else{
       driveStraight(10, 500);
     }
     else if (autoCounter == 4){
-      driveBack(10, 500);
+      driveBack(7.5, 500);
     }
     else if (autoCounter == 5){
-      rightTurn(90);
+      SmartCounterClockwise(180, 3.75, 500);
     }
     else if (autoCounter == 6){
-      driveStraight(7.5, 500);
+      driveBack(7.5, 500);
     }
     else if (autoCounter ==7){
-      CourseThree_PhaseFinal(500);
+      CourseThree_PhaseOne(500);
     }
     
     else{
@@ -559,13 +554,13 @@ else{
   }
 
   public void CourseThree_PhaseOne (double speed){
-    double innerDistance = (3.0125 * 6.095233693);
+    double innerDistance = (2 * 6.095233693);
     SmartDashboard.putNumber("innerDistance", innerDistance);
      if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
-        pc_Right1.setReference(-speed*3.077, ControlType.kVelocity);
-        pc_Right2.setReference(-speed*3.077, ControlType.kVelocity);  
+        pc_Right1.setReference(-speed*2.772951695, ControlType.kVelocity);
+        pc_Right2.setReference(-speed*2.772951695, ControlType.kVelocity);  
         
      }
       else{
@@ -585,37 +580,11 @@ else{
   }
 
   public void CourseThree_PhaseTwo(double speed) {
-    double innerDistance = (3.0125 * 6.095233693);
-    SmartDashboard.putNumber("innerDistance", innerDistance);
-     if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
-        pc_Left1.setReference(speed, ControlType.kVelocity);
-        pc_Left2.setReference(speed, ControlType.kVelocity);
-        pc_Right1.setReference(-speed*3.077, ControlType.kVelocity);
-        pc_Right2.setReference(-speed*3.077, ControlType.kVelocity);  
-        
-     }
-      else{
-        pc_Left1.setReference(0, ControlType.kVelocity);
-        pc_Left2.setReference(0, ControlType.kVelocity);
-        pc_Right1.setReference(0, ControlType.kVelocity);
-        pc_Right2.setReference(0, ControlType.kVelocity);
-        
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        
-
-        autoCounter ++;
-      }
-  }
-
-  public void CourseThree_PhaseFinal(double speed){
-    double innerDistance = (3.0125 * 6.095233693);
+    double innerDistance = (9.2063425 * 6.095233693);
     SmartDashboard.putNumber("innerDistance", innerDistance);
      if(e_Right1.getPosition() < innerDistance || e_Right2.getPosition() < innerDistance){
-        pc_Left1.setReference(-speed*3.077, ControlType.kVelocity);
-        pc_Left2.setReference(-speed*3.077, ControlType.kVelocity);
+        pc_Left1.setReference(-speed*1.693622359, ControlType.kVelocity);
+        pc_Left2.setReference(-speed*1.693622359, ControlType.kVelocity);
         pc_Right1.setReference(speed, ControlType.kVelocity);
         pc_Right2.setReference(speed, ControlType.kVelocity);  
         
@@ -635,6 +604,7 @@ else{
         autoCounter ++;
       }
   }
+
   public void SmartCounterClockwise(double degrees, double radius, double speed){
     double innerDistance = (2*Math.PI*radius * 6.095233693)*(degrees/360);
     SmartDashboard.putNumber("innerDistance", innerDistance);
