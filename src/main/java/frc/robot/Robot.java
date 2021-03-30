@@ -18,6 +18,7 @@ import com.revrobotics.*;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 //region_Imports
@@ -128,6 +129,10 @@ public class Robot extends TimedRobot {
       public NetworkTableInstance ntwrkInst = NetworkTableInstance.getDefault();
       public NetworkTable visionTable;
       public NetworkTable chameleonVision;
+      public NetworkTable VisionPi;
+      //public NetworkTableEntry xEntry;
+      public double Coordinate_X;
+      public double Coordinate_Y;
       public double chameleon_Yaw;
       public double chameleon_Pitch;
       public NetworkTable controlPanelVision;
@@ -182,6 +187,10 @@ public class Robot extends TimedRobot {
         public int autoCase;
         public int autoCounter = 0;
         public boolean resetYaw = false;
+
+        public Boolean checkedYaw = false;
+        public String GalacticColor;
+     
 
 
   //endregion
@@ -472,197 +481,218 @@ public class Robot extends TimedRobot {
     e_Left2.setPosition(0);
     e_Right1.setPosition(0);
     e_Right2.setPosition(0);
+
+
+  
   }
+
 
   @Override
   public void testPeriodic() {
 
-    
-    if (j_Operator.getRawButton(1)){
-      CourseOne();
-    }
-    else{
-      m_DriveTrain.stopMotor();
-    }
-    SmartDashboard.putNumber("autoCounter", autoCounter);
-    SmartDashboard.putNumber("right1", e_Right1.getPosition());
-    SmartDashboard.putNumber("right2", e_Right2.getPosition());
-    SmartDashboard.putNumber("left1", e_Left1.getPosition());
-    SmartDashboard.putNumber("left2", e_Left2.getPosition());
-    SmartDashboard.putNumber("yaw", navX.getYaw() % 360);
-  }
-  
-  public void CourseOne(){  
-    //autocounters are necessary so the bot does the methods in order; or else it will everything at once
-    if (autoCounter == 0) {
-      driveStraight(9.5, 1000);
-    }
-    else if (autoCounter == 1) {
-      SmartClockwise(600, 1, 500);
-    }
-    
-    else if (autoCounter == 2) {
-      driveStraight(8.4, 1000);
-    }
-    else if (autoCounter == 3) {
-      SmartCounterClockwise(510, 1, 500);
-    }
-    else if (autoCounter == 4) {
-      driveStraight(7.75, 1000);
-    }
-    else if (autoCounter == 5) {
-      SmartCounterClockwise(314, 1, 500);
-    }
-    else if (autoCounter == 6) {
-      driveStraight(22, 1000);
-    }
-
-else{
-  m_DriveTrain.stopMotor();
-    }
   }
 
-  public void CourseThree(){
-    if (autoCounter == 0){
-      CourseThree_PhaseOne(500);
-    }
-    else if (autoCounter == 1){
-      CourseThree_PhaseTwo(500);
-    }
-    else if (autoCounter == 2){
-      rightTurn(90);
-    }
-    else if (autoCounter == 3){
-      driveStraight(10, 500);
-    }
-    else if (autoCounter == 4){
-      driveBack(7.5, 500);
-    }
-    else if (autoCounter == 5){
-      SmartCounterClockwise(180, 3.75, 500);
-    }
-    else if (autoCounter == 6){
-      driveBack(7.5, 500);
-    }
-    else if (autoCounter ==7){
-      CourseThree_PhaseOne(500);
-    }
-    
-    else{
-      m_DriveTrain.stopMotor();
-    }
-  }
+  public void GalacticSearchCourseOne(){
+    GalacticCourseColor();
 
-  public void CourseThree_PhaseOne (double speed){
-    double innerDistance = (2 * 6.095233693);
-    SmartDashboard.putNumber("innerDistance", innerDistance);
-     if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
-        pc_Left1.setReference(speed, ControlType.kVelocity);
-        pc_Left2.setReference(speed, ControlType.kVelocity);
-        pc_Right1.setReference(-speed*2.772951695, ControlType.kVelocity);
-        pc_Right2.setReference(-speed*2.772951695, ControlType.kVelocity);  
-        
-     }
-      else{
-        pc_Left1.setReference(0, ControlType.kVelocity);
-        pc_Left2.setReference(0, ControlType.kVelocity);
-        pc_Right1.setReference(0, ControlType.kVelocity);
-        pc_Right2.setReference(0, ControlType.kVelocity);
-        
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        
-
-        autoCounter ++;
+    if (GalacticColor == "blue") {
+      switch (autoCounter) {
+        case 0:
+          driveStraight(15, 500);
+          break;
+        case 1: 
+          leftTurn(70);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3: 
+         driveStraight(6, 500);
+          break;
+        case 4:
+          rightTurn(120);
+          break;
+        case 5: 
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(4, 500);
+        case 7:
+          leftTurn(45);
+          break;
+        case 8:
+          driveStraight(10, 500);
+          break;     
       }
-  }
-
-  public void CourseThree_PhaseTwo(double speed) {
-    double innerDistance = (9.2063425 * 6.095233693);
-    SmartDashboard.putNumber("innerDistance", innerDistance);
-     if(e_Right1.getPosition() < innerDistance || e_Right2.getPosition() < innerDistance){
-        pc_Left1.setReference(-speed*1.693622359, ControlType.kVelocity);
-        pc_Left2.setReference(-speed*1.693622359, ControlType.kVelocity);
-        pc_Right1.setReference(speed, ControlType.kVelocity);
-        pc_Right2.setReference(speed, ControlType.kVelocity);  
-        
-     }
-      else{
-        pc_Left1.setReference(0, ControlType.kVelocity);
-        pc_Left2.setReference(0, ControlType.kVelocity);
-        pc_Right1.setReference(0, ControlType.kVelocity);
-        pc_Right2.setReference(0, ControlType.kVelocity);
-        
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        
-
-        autoCounter ++;
-      }
-  }
-
-  public void SmartCounterClockwise(double degrees, double radius, double speed){
-    double innerDistance = (2*Math.PI*radius * 6.095233693)*(degrees/360);
-    SmartDashboard.putNumber("innerDistance", innerDistance);
-    if(e_Left1.getPosition() < innerDistance || e_Left2.getPosition() < innerDistance){
-      pc_Left1.setReference(speed, ControlType.kVelocity);
-      pc_Left2.setReference(speed, ControlType.kVelocity);
-      pc_Right1.setReference(-speed*(1+(25/(12*radius))), ControlType.kVelocity);
-      pc_Right2.setReference(-speed*(1+(25/(12*radius))), ControlType.kVelocity);
-      //difference between outer and inner wheel is 25 inches
-      //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
- 
-     }
-     else{
-      pc_Left1.setReference(0, ControlType.kVelocity);
-      pc_Left2.setReference(0, ControlType.kVelocity);
-      pc_Right1.setReference(0, ControlType.kVelocity);
-      pc_Right2.setReference(0, ControlType.kVelocity);
-      //so the robot stops immediatly, and its momentum does not contine
-
-      e_Left1.setPosition(0);
-      e_Left2.setPosition(0);
-      e_Right1.setPosition(0);
-      e_Right2.setPosition(0);
-      //resets the encoder counts for the following methods
-
-      autoCounter++;
-     }
     }
 
-  public void SmartClockwise (double degrees, double radius, double speed) {
-    double innerDistance = -(2*Math.PI*radius*6.095233693)*(degrees/360);
-    SmartDashboard.putNumber("innerDistance", innerDistance);
-    if(e_Right1.getPosition() > innerDistance || e_Right2.getPosition() > innerDistance){
-      pc_Left1.setReference(speed*(1+(25/(12*radius))), ControlType.kVelocity);
-      pc_Left2.setReference(speed*(1+(25/(12*radius))), ControlType.kVelocity);
-      pc_Right1.setReference(-speed, ControlType.kVelocity);
-      pc_Right2.setReference(-speed, ControlType.kVelocity);
-      //difference between outer and inner wheel is 25 inches
-      //calculate the proportion of distance traveled between a circle with a 1'0" radius versus 2'9"
- 
-     }
-     else{
-      pc_Left1.setReference(0, ControlType.kVelocity);
-      pc_Left2.setReference(0, ControlType.kVelocity);
-      pc_Right1.setReference(0, ControlType.kVelocity);
-      pc_Right2.setReference(0, ControlType.kVelocity);
-      //so the robot stops immediatly, and its momentum does not contine
+    if (GalacticColor == "red"){
+      switch (autoCounter){
+        case 0:
+          driveStraight(5, 500);
+          break;
+        case 1:
+          rightTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(7, 500);
+          break;
+        case 4:
+          leftTurn(140);
+          break;
+        case 5:
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(12, 500);
+          break;
+        case 7:
+          rightTurn(90);
+          break;
+        case 8: 
+          driveStraight(10, 500);
+          break;
+      }
+    }
+  }
 
-      e_Left1.setPosition(0);
-      e_Left2.setPosition(0);
-      e_Right1.setPosition(0);
-      e_Right2.setPosition(0);
-      //resets the encoder counts for the following methods
+  public void GalacticSearchCourseTwo(){
+    GalacticCourseColor();
 
-      autoCounter++;
+    if (GalacticColor == "blue") {
+      switch (autoCounter){
+        case 0: 
+          driveStraight(15, 500);
+          break;
+        case 1: 
+          leftTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(7.5, 500);
+          break;
+        case 4:
+          rightTurn(90);
+          break;
+        case 5: 
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(12, 500);
+          break;
+      }
+    }
+
+    if (GalacticColor == "red"){
+      switch (autoCounter){
+        case 0:
+          driveStraight(7.5, 500);
+          break;
+        case 1:
+          rightTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(8, 500);
+          break;
+        case 4:
+          leftTurn(100);
+          break;
+        case 5:
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(8, 500);
+          break;
+        case 7:
+          rightTurn(45);
+          break;
+        case 8:
+          driveBack(8, 500);
+          break;
+      }
+    }
+  }
+
+  public void AutoNavCourseOne(){
+
+  }
+
+  public void AutoNavCourseTwo(){
+    switch (autoCounter) {
+      case 0:
+        smartTurn("left", 60, 500, 500);
+        break;
+      case 1:
+        smartTurn("right", 60, 500, 500);
+        break;
+      case 2:
+        smartTurn("right", 130, 1000, 250);
+        break;
+      case 3:
+        smartTurn("left", 160, 500, 750);
+        break;
+      case 4:
+        smartTurn("left", 180, 500, 750);
+         break;
+      case 5:
+        smartTurn("right", 20, 500, 500);
+        break;
+      case 6:
+        smartTurn("right", 130, 1000, 250);
+        break;
+      case 7:
+        smartTurn("left", 60, 500, 500);
+         break;
      }
   }
-  
+
+  public void AutoNavCourseThree(){
+      if (autoCounter == 0){
+  smartTurn("l", 500, 86, 500);
+      }else if(autoCounter == 1){
+  driveBack(5, 500);
+      }else if(autoCounter == 2){
+  smartTurn("r", -500, 86, -800);
+      }else if(autoCounter == 3){
+  driveBack(.5, 500);
+      }else if(autoCounter == 4){
+  smartTurn("r", -500, 88, -800);
+      }else if(autoCounter == 5){
+  driveBack(6.7, 500);
+      }else if(autoCounter == 6){
+  driveStraight(5, 500);
+      }else if(autoCounter == 7){
+  smartTurn("l", 500, 88, 500);
+      }else if(autoCounter == 8){
+  smartTurn("l", 500, 88, 700);
+      }else if(autoCounter == 9){
+  driveStraight(5.6, 500);
+      }else if(autoCounter == 10){
+  smartTurn("r", -500, 86, -800);
+      }else if(autoCounter == 11){
+  driveBack(2, 500);
+      }
+}
+
+  public void WebcamVision(){
+    VisionPi = ntwrkInst.getTable("VisionPi");
+    System.out.println(VisionPi.getKeys());
+
+    Coordinate_X = (VisionPi.getEntry("VisionX").getDouble(0));
+    SmartDashboard.putNumber("VisionX", Coordinate_X);
+    
+    Coordinate_Y = (VisionPi.getEntry("VisionX").getDouble(0));
+    SmartDashboard.putNumber("VisionX", Coordinate_Y);
+  }
+
   //region_Methods
     public void gettingVision(){
       chameleonVision = ntwrkInst.getTable("chameleon-vision");
@@ -673,6 +703,7 @@ else{
       areaGreen = controlPanelVision.getEntry("AreaGreen").getDouble(0);
       areaBlue = controlPanelVision.getEntry("AreaBlue").getDouble(0);
       areaYel = controlPanelVision.getEntry("AreaYellow").getDouble(0);
+
     }  
 
     public void joystickControl(){ //method for implementing our lowgear/highgear modes into our driver controls
@@ -1009,7 +1040,7 @@ else{
 
       }
     }
-
+    
     public void driveBack(double feet, double speed){
       double encoderFeet = feet * 6.095233693;
       if(e_Left1.getPosition() > -encoderFeet || e_Left2.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet || e_Right2.getPosition() < encoderFeet){
@@ -1030,8 +1061,7 @@ else{
 
       }
     }
-
-    
+  
     public void rightTurn(double targetAngle){
       if(resetYaw == false){
         navX.zeroYaw();
@@ -1086,6 +1116,176 @@ else{
       }
     }
     
+    /*public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
+      // Flip checked to true after one iteration, prevents continuous checking
+      if (checkedYaw == false) {
+        navX.zeroYaw();
+        checkedYaw = true;
+      }
+
+
+      //continuously check yaw offset since last zeroYaw set to 0
+      double currentYaw = navX.getYaw() % 360;
+      System.out.println("Current yaw: " + currentYaw);
+      System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
+      /*
+      Radius Calculation:
+      outsideWheelSpeed = (robotSpeed + turnSpeed) 
+      insideWheelSpeed = robotSpeed
+
+               outsideWheelSpeed + insideWheelSpeed
+      Radius = ------------------------------------ * distance between the wheels
+               outsideWheelSpeed - insideWheelSpeed
+
+      
+                        (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
+      insideWheel =   - ------------------------------------------------------ , 
+                                     WANTED RADIUS + width
+
+      
+
+
+      double targetSpeed = fps * (30 * Math.PI);
+      //double insideWheelSpeed = - ((((25/12) * fps) - (targetRadius * fps)) / (targetRadius + (25/12)))
+      double insideWheelSpeed = (fps - ((25/12) * targetRadius)) * (30 * Math.PI);
+
+      
+      if (Math.abs(currentYaw) < targetAngle) {
+        switch (direction) {
+          case "Right":
+          case "right":
+          case "R":
+          case "r":
+            System.out.println("right");
+            // faster (outside)
+            pc_Left1.setReference(targetSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(targetSpeed, ControlType.kVelocity);
+            //slower (inside)
+            pc_Right1.setReference(-insideWheelSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-insideWheelSpeed, ControlType.kVelocity);
+            break;
+          case "Left":
+          case "left":
+          case "L":
+          case "l":
+            System.out.println("left");
+            //faster (outside)
+            pc_Right1.setReference(-targetSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-targetSpeed, ControlType.kVelocity);
+            //slower (inside)
+            pc_Left1.setReference(insideWheelSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(insideWheelSpeed, ControlType.kVelocity);
+            
+            break;
+          default:
+            System.out.println("You did not give a direction.");
+        }
+      }
+      else if (Math.abs(currentYaw) >= targetAngle) {
+        System.out.println("Finished.");
+        m_DriveTrain.stopMotor();
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        checkedYaw = false;
+        autoCounter++;
+      };
+      
+    }*/
+
+
+
+   public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
+    // Flip checked to true after one iteration, prevents continuous checking
+    if (checkedYaw == false) {
+      navX.zeroYaw();
+      checkedYaw = true;
+    }
+    
+    //continuously check yaw offset since last zeroYaw set to 0
+    double currentYaw = navX.getYaw() % 360;
+    System.out.println("Current yaw: " + currentYaw);
+    System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
+    /*
+    Radius Calculation:
+    outsideWheelSpeed = (robotSpeed + turnSpeed) 
+    insideWheelSpeed = robotSpeed
+             outsideWheelSpeed + insideWheelSpeed
+    Radius = ------------------------------------ * distance between the wheels
+             outsideWheelSpeed - insideWheelSpeed
+    
+                      (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
+    insideWheel =   - ------------------------------------------------------ , 
+                                   WANTED RADIUS + width
+    */
+
+    
+    if (Math.abs(currentYaw) < targetAngle) {
+      double normalSpeed;
+      double turnWheelSpeed;
+      switch (direction) {
+        case "Right":
+        case "right":
+        case "R":
+        case "r":
+          System.out.println("right");
+          normalSpeed = robotSpeed;
+          turnWheelSpeed = robotSpeed + turnSpeed;
+          pc_Left1.setReference(turnWheelSpeed, ControlType.kVelocity);
+          pc_Left2.setReference(turnWheelSpeed, ControlType.kVelocity);
+          pc_Right1.setReference(-normalSpeed, ControlType.kVelocity);
+          pc_Right2.setReference(-normalSpeed, ControlType.kVelocity);
+          break;
+        case "Left":
+        case "left":
+        case "L":
+        case "l":
+          System.out.println("left");
+          normalSpeed = robotSpeed;
+          turnWheelSpeed = robotSpeed + turnSpeed;
+          pc_Left1.setReference(normalSpeed, ControlType.kVelocity);
+          pc_Left2.setReference(normalSpeed, ControlType.kVelocity);
+          pc_Right1.setReference(-turnWheelSpeed, ControlType.kVelocity);
+          pc_Right2.setReference(-turnWheelSpeed, ControlType.kVelocity);
+          break;
+        default:
+          System.out.println("You did not give a direction.");
+      }
+    }
+    else if (Math.abs(currentYaw) >= targetAngle) {
+      System.out.println("Finished.");
+      m_DriveTrain.stopMotor();
+      e_Right1.setPosition(0);
+      e_Right2.setPosition(0);
+      e_Left1.setPosition(0);
+      e_Left2.setPosition(0);
+      checkedYaw = false;
+      autoCounter++;
+    };
+    
+  }
+
+  public void GalacticCourseColor(){
+    if (Coordinate_Y >= 500){
+      GalacticColor = "blue";
+    }
+    else{
+      GalacticColor = "red";
+    }
+  }
+
+  public void GalacticAlignment (){
+    if (Coordinate_X < 440){
+      leftTurn(1);
+    }
+    if (Coordinate_X > 500){
+      rightTurn(1);
+    }
+    if (Coordinate_X >= 450 && Coordinate_X <= 500){
+      autoCounter++;
+    }
+  }
     //endregion
 
 }
