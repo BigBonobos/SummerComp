@@ -1021,21 +1021,34 @@ public class Robot extends TimedRobot {
     } 
 
 	public void driveStraight(double feet, double speed){
+
+      //change encoder distance to feet (I didn't write this lmao -R)
       double encoderFeet = feet * 6.095233693;
+
+      //flip speed if negative
+      if (feet < 0) {
+        speed = -speed;
+      }
+
+      //check by absolute value to make sure pos is changing the right distance
       if(Math.abs(e_Left1.getPosition()) < encoderFeet || Math.abs(e_Left2.getPosition()) < encoderFeet || Math.abs(e_Right1.getPosition()) > -encoderFeet || Math.abs(e_Right2.getPosition()) > -encoderFeet){
+        
+        // left needs to be opposite of right
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
         pc_Right1.setReference(-speed, ControlType.kVelocity);
         pc_Right2.setReference(-speed, ControlType.kVelocity);
       }
       else{
+
+        //stop the motors and reset the encoder counts for the following methods
         m_DriveTrain.stopMotor();
         e_Right1.setPosition(0);
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
-        //resets the encoder counts for the following methods
 
+        //increment upward
         autoCounter ++;
 
       }
