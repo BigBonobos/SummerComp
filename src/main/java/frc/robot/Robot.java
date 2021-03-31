@@ -11,23 +11,32 @@
 
 package frc.robot;
 
+//navx imports
+import com.kauailabs.navx.frc.*;
+//spark max/neos imports
+import com.revrobotics.*;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 //region_Imports
 
-  //regular imports
-    import edu.wpi.first.wpilibj.*;
-    import edu.wpi.first.wpilibj.GenericHID.Hand;
-    import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-    import edu.wpi.first.networktables.*;
-    import edu.wpi.first.wpilibj.smartdashboard.*;
-    import edu.wpi.first.wpilibj.drive.*;
-    import edu.wpi.first.wpilibj.SpeedControllerGroup.*;
-
-  //spark max/neos imports
-    import com.revrobotics.*;
-    import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
-  //navx imports
-    import com.kauailabs.navx.frc.*;
+//regular imports
+import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
   //endregion
 
@@ -42,19 +51,19 @@ public class Robot extends TimedRobot {
       public XboxController j_XboxController = new XboxController(4);
 
     //neos
-      public CANSparkMax m_Left1 = new CANSparkMax(12, MotorType.kBrushless);
-      public CANSparkMax m_Left2 = new CANSparkMax(13, MotorType.kBrushless);
-      public CANSparkMax m_Right1 = new CANSparkMax(1, MotorType.kBrushless);
-      public CANSparkMax m_Right2 = new CANSparkMax(2, MotorType.kBrushless);
-      public CANSparkMax m_Intake = new CANSparkMax(6, MotorType.kBrushless); //negative power for in, positive power for out
-      public CANSparkMax m_Feeder = new CANSparkMax(7, MotorType.kBrushless); //positive power for in, negative power for out
-      public CANSparkMax m_Tilting = new CANSparkMax(5, MotorType.kBrushless); //positive power for up, negative power for down
-      public CANSparkMax m_TopShooter = new CANSparkMax(11, MotorType.kBrushless); //positive power for out
-      public CANSparkMax m_BotShooter = new CANSparkMax(10, MotorType.kBrushless); //negative power for out
-      public CANSparkMax m_ControlPanel = new CANSparkMax(8, MotorType.kBrushless); //when facing robot's control panel wheel from front of bot, positive power spins ccw and negative power spins cw
-      public CANSparkMax m_Climb = new CANSparkMax(3, MotorType.kBrushless);
-      public CANSparkMax m_LeftWinch = new CANSparkMax(9, MotorType.kBrushless);
-      public CANSparkMax m_RightWinch = new CANSparkMax(4, MotorType.kBrushless);
+      public CANSparkMax m_Left1 = new CANSparkMax(42, MotorType.kBrushless); //OG 12 
+      public CANSparkMax m_Left2 = new CANSparkMax(60, MotorType.kBrushless); //OG 13
+      public CANSparkMax m_Right1 = new CANSparkMax(61, MotorType.kBrushless); //OG 1
+      public CANSparkMax m_Right2 = new CANSparkMax(62, MotorType.kBrushless); //OG 2
+      public CANSparkMax m_Intake = new CANSparkMax(8, MotorType.kBrushless); //negative power for in, positive power for out //OG 6
+      public CANSparkMax m_Feeder = new CANSparkMax(6, MotorType.kBrushless); //positive power for in, negative power for out //OG 7
+      public CANSparkMax m_Tilting = new CANSparkMax(5, MotorType.kBrushless); //positive power for up, negative power for down //OG 5
+      public CANSparkMax m_TopShooter = new CANSparkMax(11, MotorType.kBrushless); //positive power for out //OG 11
+      public CANSparkMax m_BotShooter = new CANSparkMax(10, MotorType.kBrushless); //negative power for out //OG 10
+      public CANSparkMax m_ControlPanel = new CANSparkMax(13, MotorType.kBrushless); //when facing robot's control panel wheel from front of bot, positive power spins ccw and negative power spins cw //OG 8
+      public CANSparkMax m_Climb = new CANSparkMax(3, MotorType.kBrushless); //OG 3
+      public CANSparkMax m_LeftWinch = new CANSparkMax(9, MotorType.kBrushless); //OG 9
+      public CANSparkMax m_RightWinch = new CANSparkMax(4, MotorType.kBrushless); //OG 4
 
     //neo encoders
       public CANEncoder e_Left1 = m_Left1.getEncoder(); //positive forward for Left
@@ -97,7 +106,7 @@ public class Robot extends TimedRobot {
 
     //tuning variables
       public double kP_Left1, kI_Left1, kD_Left1, kIz_Left1, kFF_Left1;
-      public double kP_Left2, kI_Left2, kD_Left2, kIz_Left2, kFF_Left2; //gay
+      public double kP_Left2, kI_Left2, kD_Left2, kIz_Left2, kFF_Left2; 
       public double kP_Right1, kI_Right1, kD_Right1, kIz_Right1, kFF_Right1;
       public double kP_Right2, kI_Right2, kD_Right2, kIz_Right2, kFF_Right2;
       public double kP_Feeder, kI_Feeder, kD_Feeder, kIz_Feeder, kFF_Feeder;
@@ -120,6 +129,10 @@ public class Robot extends TimedRobot {
       public NetworkTableInstance ntwrkInst = NetworkTableInstance.getDefault();
       public NetworkTable visionTable;
       public NetworkTable chameleonVision;
+      public NetworkTable VisionPi;
+      //public NetworkTableEntry xEntry;
+      public double Coordinate_X;
+      public double Coordinate_Y;
       public double chameleon_Yaw;
       public double chameleon_Pitch;
       public NetworkTable controlPanelVision;
@@ -173,6 +186,11 @@ public class Robot extends TimedRobot {
       //variables for auto phase
         public int autoCase;
         public int autoCounter = 0;
+        public boolean resetYaw = false;
+
+        public Boolean checkedYaw = false;
+        public String GalacticColor;
+     
 
 
   //endregion
@@ -366,13 +384,15 @@ public class Robot extends TimedRobot {
 
 
     }
-
-    SmartDashboard.putNumber("autocounter", autoCounter);
   }
 
   @Override
   public void teleopInit() {
     m_Feeder.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    e_Right1.setPosition(0);
+    e_Right2.setPosition(0);
+    e_Left1.setPosition(0);
+    e_Left2.setPosition(0);
   }
 
   @Override
@@ -457,61 +477,220 @@ public class Robot extends TimedRobot {
   public void testInit() {
     autoCounter = 0;
     navX.zeroYaw();
-    e_Right1.setPosition(0);
-    e_Right2.setPosition(0);
     e_Left1.setPosition(0);
     e_Left2.setPosition(0);
-    e_Climb.setPosition(0);
+    e_Right1.setPosition(0);
+    e_Right2.setPosition(0);
+
+
+  
   }
+
 
   @Override
   public void testPeriodic() {
-    if (autoCounter == 0) {
-      extraSmartTurn("left", 30, 1, 5);
+
+  }
+
+  public void GalacticSearchCourseOne(){
+    GalacticCourseColor();
+
+    if (GalacticColor == "blue") {
+      switch (autoCounter) {
+        case 0:
+          driveStraight(15, 500);
+          break;
+        case 1: 
+          leftTurn(70);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3: 
+         driveStraight(6, 500);
+          break;
+        case 4:
+          rightTurn(120);
+          break;
+        case 5: 
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(4, 500);
+        case 7:
+          leftTurn(45);
+          break;
+        case 8:
+          driveStraight(10, 500);
+          break;     
+      }
     }
 
-    // switch (autoCounter) {
-    //   case 0:
-    //     smartTurn("left", 60, 500, 500);
-    //     break;
-    //   case 1:
-    //     smartTurn("right", 60, 500, 500);
-    //     break;
-    //   case 2:
-    //     smartTurn("right", 130, 1000, 250);
-    //     break;
-    //   case 3:
-    //     smartTurn("left", 160, 500, 750);
-    //     break;
-    //   case 4:
-    //     smartTurn("left", 180, 500, 750);
-    //     break;
-    //   case 5:
-    //     smartTurn("right", 20, 500, 500);
-    //     break;
-    //   case 6:
-    //     smartTurn("right", 130, 1000, 250);
-    //     break;
-    //   case 7:
-    //     smartTurn("left", 60, 500, 500);
-    //     break;
-    //   }
+    if (GalacticColor == "red"){
+      switch (autoCounter){
+        case 0:
+          driveStraight(5, 500);
+          break;
+        case 1:
+          rightTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(7, 500);
+          break;
+        case 4:
+          leftTurn(140);
+          break;
+        case 5:
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(12, 500);
+          break;
+        case 7:
+          rightTurn(90);
+          break;
+        case 8: 
+          driveStraight(10, 500);
+          break;
+      }
     }
+  }
+
+  public void GalacticSearchCourseTwo(){
+    GalacticCourseColor();
+
+    if (GalacticColor == "blue") {
+      switch (autoCounter){
+        case 0: 
+          driveStraight(15, 500);
+          break;
+        case 1: 
+          leftTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(7.5, 500);
+          break;
+        case 4:
+          rightTurn(90);
+          break;
+        case 5: 
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(12, 500);
+          break;
+      }
+    }
+
+    if (GalacticColor == "red"){
+      switch (autoCounter){
+        case 0:
+          driveStraight(7.5, 500);
+          break;
+        case 1:
+          rightTurn(45);
+          break;
+        case 2:
+          GalacticAlignment();
+          break;
+        case 3:
+          driveStraight(8, 500);
+          break;
+        case 4:
+          leftTurn(100);
+          break;
+        case 5:
+          GalacticAlignment();
+          break;
+        case 6:
+          driveStraight(8, 500);
+          break;
+        case 7:
+          rightTurn(45);
+          break;
+        case 8:
+          driveBack(8, 500);
+          break;
+      }
+    }
+  }
+
+  public void AutoNavCourseOne(){
+
+  }
+
+  public void AutoNavCourseTwo(){
+    switch (autoCounter) {
+      case 0:
+        smartTurn("left", 60, 500, 500);
+        break;
+      case 1:
+        smartTurn("right", 60, 500, 500);
+        break;
+      case 2:
+        smartTurn("right", 130, 1000, 250);
+        break;
+      case 3:
+        smartTurn("left", 160, 500, 750);
+        break;
+      case 4:
+        smartTurn("left", 180, 500, 750);
+         break;
+      case 5:
+        smartTurn("right", 20, 500, 500);
+        break;
+      case 6:
+        smartTurn("right", 130, 1000, 250);
+        break;
+      case 7:
+        smartTurn("left", 60, 500, 500);
+         break;
+     }
+  }
+
+  public void AutoNavCourseThree(){
+      if (autoCounter == 0){
+  smartTurn("l", 500, 86, 500);
+      }else if(autoCounter == 1){
+  driveBack(5, 500);
+      }else if(autoCounter == 2){
+  smartTurn("r", -500, 86, -800);
+      }else if(autoCounter == 3){
+  driveBack(.5, 500);
+      }else if(autoCounter == 4){
+  smartTurn("r", -500, 88, -800);
+      }else if(autoCounter == 5){
+  driveBack(6.7, 500);
+      }else if(autoCounter == 6){
+  driveStraight(5, 500);
+      }else if(autoCounter == 7){
+  smartTurn("l", 500, 88, 500);
+      }else if(autoCounter == 8){
+  smartTurn("l", 500, 88, 700);
+      }else if(autoCounter == 9){
+  driveStraight(5.6, 500);
+      }else if(autoCounter == 10){
+  smartTurn("r", -500, 86, -800);
+      }else if(autoCounter == 11){
+  driveBack(2, 500);
+      }
+}
+
+  public void WebcamVision(){
+    VisionPi = ntwrkInst.getTable("VisionPi");
+    System.out.println(VisionPi.getKeys());
+
+    Coordinate_X = (VisionPi.getEntry("VisionX").getDouble(0));
+    SmartDashboard.putNumber("VisionX", Coordinate_X);
     
-    climb();
-    SmartDashboard.putNumber("climb encoder counts", e_Climb.getPosition());
-    SmartDashboard.putNumber("right1", e_Right1.getPosition());
-    SmartDashboard.putNumber("right2", e_Right2.getPosition());
-    SmartDashboard.putNumber("left1", e_Left1.getPosition());
-    SmartDashboard.putNumber("left2", e_Left2.getPosition());
-    SmartDashboard.putNumber("navx", navX.getYaw() % 360);
-    SmartDashboard.putBoolean("climbextender", extendClimber);
-    SmartDashboard.putBoolean("switch climb mode ", switchClimbMode);
-    SmartDashboard.putBoolean("clmib mode", climbMode);
-    SmartDashboard.putBoolean("extend clmib mode", extendClimbMode);
-
-
-
+    Coordinate_Y = (VisionPi.getEntry("VisionX").getDouble(0));
+    SmartDashboard.putNumber("VisionX", Coordinate_Y);
   }
 
   //region_Methods
@@ -524,6 +703,7 @@ public class Robot extends TimedRobot {
       areaGreen = controlPanelVision.getEntry("AreaGreen").getDouble(0);
       areaBlue = controlPanelVision.getEntry("AreaBlue").getDouble(0);
       areaYel = controlPanelVision.getEntry("AreaYellow").getDouble(0);
+
     }  
 
     public void joystickControl(){ //method for implementing our lowgear/highgear modes into our driver controls
@@ -603,7 +783,7 @@ public class Robot extends TimedRobot {
         m_Right2.stopMotor();
       }
     }
-
+  
     public void intakingBalls() {
       newBallBoolean = interruptSensor.get();
       if(oldBallBoolean != newBallBoolean && newBallBoolean == true && ballDebounceBoolean == false){
@@ -632,8 +812,8 @@ public class Robot extends TimedRobot {
       else{
         m_Intake.set(1);
         //j_XboxController.setRumble(RumbleType.kLeftRumble, 0);
-      }
-
+      } 
+      
       if (ballCounter > 3){
         Timer.delay(.5);
         intakeExtended = false;
@@ -673,7 +853,7 @@ public class Robot extends TimedRobot {
         m_Feeder.stopMotor();
       }
     }
-  
+    
     public void tiltingControl() {
       if (j_Operator.getRawButton(9)){
         pc_Tilting.setReference(67, ControlType.kPosition);
@@ -838,11 +1018,11 @@ public class Robot extends TimedRobot {
         m_Climb.set(j_Operator.getY());
       }
 
-    }
+    } 
 
-    public void driveStraight(double feet, double speed){
+	public void driveStraight(double feet, double speed){
       double encoderFeet = feet * 6.095233693;
-      if(e_Left1.getPosition() < encoderFeet || e_Left2.getPosition() < encoderFeet || e_Right1.getPosition() > -encoderFeet || e_Right2.getPosition() > -encoderFeet){
+      if(Math.abs(e_Left1.getPosition()) < encoderFeet || Math.abs(e_Left2.getPosition()) < encoderFeet || Math.abs(e_Right1.getPosition()) > -encoderFeet || Math.abs(e_Right2.getPosition()) > -encoderFeet){
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
         pc_Right1.setReference(-speed, ControlType.kVelocity);
@@ -854,13 +1034,40 @@ public class Robot extends TimedRobot {
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
+        //resets the encoder counts for the following methods
+
         autoCounter ++;
+
       }
     }
+    
+    public void driveBack(double feet, double speed){
+      double encoderFeet = feet * 6.095233693;
+      if(e_Left1.getPosition() > -encoderFeet || e_Left2.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet || e_Right2.getPosition() < encoderFeet){
+        pc_Left1.setReference(-speed, ControlType.kVelocity);
+        pc_Left2.setReference(-speed, ControlType.kVelocity);
+        pc_Right1.setReference(speed, ControlType.kVelocity);
+        pc_Right2.setReference(speed, ControlType.kVelocity);
+      }
+      else{
+        m_DriveTrain.stopMotor();
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        //resets the encoder counts for the following methods
 
+        autoCounter ++;
+
+      }
+    }
+  
     public void rightTurn(double targetAngle){
-      double actualYaw = navX.getYaw() % 360;
-
+      if(resetYaw == false){
+        navX.zeroYaw();
+        resetYaw = true;
+      }
+      double actualYaw = Math.abs(navX.getYaw() % 360);
       if (Math.abs(actualYaw - targetAngle) < 8){
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
@@ -870,18 +1077,26 @@ public class Robot extends TimedRobot {
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
-        autoCounter ++;
+        navX.reset();
+        autoCounter++; 
       }
       else{
-        m_Left.set(.4);
-        m_Right.set(.4);
+        pc_Left1.setReference(1000, ControlType.kVelocity);
+        pc_Left2.setReference(1000, ControlType.kVelocity);
+        pc_Right1.setReference(1000, ControlType.kVelocity);
+        pc_Right2.setReference(1000, ControlType.kVelocity);
+
       }
 
     }
 
     public void leftTurn(double targetAngle){
-      double actualYaw = navX.getYaw() % 360;
-      if (Math.abs(actualYaw - targetAngle) < 8){
+      if(resetYaw == false){
+        navX.zeroYaw();
+        resetYaw = true;
+      }
+      double actualYaw = Math.abs(navX.getYaw() % 360);
+      if (Math.abs(actualYaw - targetAngle) < 6){
         pc_Left1.setReference(0, ControlType.kVelocity);
         pc_Left2.setReference(0, ControlType.kVelocity);
         pc_Right1.setReference(0, ControlType.kVelocity);
@@ -890,6 +1105,7 @@ public class Robot extends TimedRobot {
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
+        resetYaw = false;
         autoCounter ++;
       }
       else{
@@ -898,103 +1114,14 @@ public class Robot extends TimedRobot {
         pc_Right1.setReference(-1000, ControlType.kVelocity);
         pc_Right2.setReference(-1000, ControlType.kVelocity);
       }
-
-
-      public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
-        // Flip checked to true after one iteration, prevents continuous checking
-        if (checkedYaw == false) {
-          navX.zeroYaw();
-          checkedYaw = true;
-        }
-  
-  
-        //continuously check yaw offset since last zeroYaw set to 0
-        double currentYaw = navX.getYaw() % 360;
-        System.out.println("Current yaw: " + currentYaw);
-        System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
-        /*
-        Radius Calculation:
-        outsideWheelSpeed = (robotSpeed + turnSpeed) 
-        insideWheelSpeed = robotSpeed
-  
-                 outsideWheelSpeed + insideWheelSpeed
-        Radius = ------------------------------------ * distance between the wheels
-                 outsideWheelSpeed - insideWheelSpeed
-  
-        
-                          (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
-        insideWheel =   - ------------------------------------------------------ , 
-                                       WANTED RADIUS + width
-  
-        */
-  
-
-        double targetSpeed = fps * (30 * Math.PI)
-        //double insideWheelSpeed = - ((((25/12) * fps) - (targetRadius * fps)) / (targetRadius + (25/12)))
-        double insideWheelSpeed = (fps - ((25/12) * targetRadius)) * (30 * Math.PI)
-
-        
-        if (Math.abs(currentYaw) < targetAngle) {
-          switch (direction) {
-            case "Right":
-            case "right":
-            case "R":
-            case "r":
-              System.out.println("right");
-              normalSpeed = robotSpeed;
-              turnWheelSpeed = robotSpeed + turnSpeed;
-              // faster (outside)
-              pc_Left1.setReference(targetSpeed, ControlType.kVelocity);
-              pc_Left2.setReference(targetSpeed, ControlType.kVelocity);
-              //slower (inside)
-              pc_Right1.setReference(-insideWheelSpeed, ControlType.kVelocity);
-              pc_Right2.setReference(-insideWheelSpeed, ControlType.kVelocity);
-              break;
-            case "Left":
-            case "left":
-            case "L":
-            case "l":
-              System.out.println("left");
-              normalSpeed = robotSpeed;
-              turnWheelSpeed = robotSpeed + turnSpeed;
-              //faster (outside)
-              pc_Right1.setReference(-targetSpeed, ControlType.kVelocity);
-              pc_Right2.setReference(-targetSpeed, ControlType.kVelocity);
-              //slower (inside)
-              pc_Left1.setReference(insideWheelSpeed, ControlType.kVelocity);
-              pc_Left2.setReference(insideWheelSpeed, ControlType.kVelocity);
-              
-              break;
-            default:
-              System.out.println("You did not give a direction.");
-          }
-        }
-        else if (Math.abs(currentYaw) >= targetAngle) {
-          System.out.println("Finished.");
-          m_DriveTrain.stopMotor();
-          e_Right1.setPosition(0);
-          e_Right2.setPosition(0);
-          e_Left1.setPosition(0);
-          e_Left2.setPosition(0);
-          checkedYaw = false;
-          autoCounter++;
-        };
-        
-      }
-      }
-
-
-
-     public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
+    }
+    
+    /*public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
       // Flip checked to true after one iteration, prevents continuous checking
       if (checkedYaw == false) {
         navX.zeroYaw();
         checkedYaw = true;
       }
-      
-
-
-
 
 
       //continuously check yaw offset since last zeroYaw set to 0
@@ -1015,36 +1142,40 @@ public class Robot extends TimedRobot {
       insideWheel =   - ------------------------------------------------------ , 
                                      WANTED RADIUS + width
 
-      */
+      
+
+
+      double targetSpeed = fps * (30 * Math.PI);
+      //double insideWheelSpeed = - ((((25/12) * fps) - (targetRadius * fps)) / (targetRadius + (25/12)))
+      double insideWheelSpeed = (fps - ((25/12) * targetRadius)) * (30 * Math.PI);
 
       
       if (Math.abs(currentYaw) < targetAngle) {
-        double normalSpeed;
-        double turnWheelSpeed;
         switch (direction) {
           case "Right":
           case "right":
           case "R":
           case "r":
             System.out.println("right");
-            normalSpeed = robotSpeed;
-            turnWheelSpeed = robotSpeed + turnSpeed;
-            pc_Left1.setReference(turnWheelSpeed, ControlType.kVelocity);
-            pc_Left2.setReference(turnWheelSpeed, ControlType.kVelocity);
-            pc_Right1.setReference(-normalSpeed, ControlType.kVelocity);
-            pc_Right2.setReference(-normalSpeed, ControlType.kVelocity);
+            // faster (outside)
+            pc_Left1.setReference(targetSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(targetSpeed, ControlType.kVelocity);
+            //slower (inside)
+            pc_Right1.setReference(-insideWheelSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-insideWheelSpeed, ControlType.kVelocity);
             break;
           case "Left":
           case "left":
           case "L":
           case "l":
             System.out.println("left");
-            normalSpeed = robotSpeed;
-            turnWheelSpeed = robotSpeed + turnSpeed;
-            pc_Left1.setReference(normalSpeed, ControlType.kVelocity);
-            pc_Left2.setReference(normalSpeed, ControlType.kVelocity);
-            pc_Right1.setReference(-turnWheelSpeed, ControlType.kVelocity);
-            pc_Right2.setReference(-turnWheelSpeed, ControlType.kVelocity);
+            //faster (outside)
+            pc_Right1.setReference(-targetSpeed, ControlType.kVelocity);
+            pc_Right2.setReference(-targetSpeed, ControlType.kVelocity);
+            //slower (inside)
+            pc_Left1.setReference(insideWheelSpeed, ControlType.kVelocity);
+            pc_Left2.setReference(insideWheelSpeed, ControlType.kVelocity);
+            
             break;
           default:
             System.out.println("You did not give a direction.");
@@ -1061,15 +1192,105 @@ public class Robot extends TimedRobot {
         autoCounter++;
       };
       
-    }
+    }*/
+
+
+
+   public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
+    // Flip checked to true after one iteration, prevents continuous checking
+    if (checkedYaw == false) {
+      navX.zeroYaw();
+      checkedYaw = true;
     }
     
+    //continuously check yaw offset since last zeroYaw set to 0
+    double currentYaw = navX.getYaw() % 360;
+    System.out.println("Current yaw: " + currentYaw);
+    System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
+    /*
+    Radius Calculation:
+    outsideWheelSpeed = (robotSpeed + turnSpeed) 
+    insideWheelSpeed = robotSpeed
+             outsideWheelSpeed + insideWheelSpeed
+    Radius = ------------------------------------ * distance between the wheels
+             outsideWheelSpeed - insideWheelSpeed
+    
+                      (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
+    insideWheel =   - ------------------------------------------------------ , 
+                                   WANTED RADIUS + width
+    */
+
+    
+    if (Math.abs(currentYaw) < targetAngle) {
+      double normalSpeed;
+      double turnWheelSpeed;
+      switch (direction) {
+        case "Right":
+        case "right":
+        case "R":
+        case "r":
+          System.out.println("right");
+          normalSpeed = robotSpeed;
+          turnWheelSpeed = robotSpeed + turnSpeed;
+          pc_Left1.setReference(turnWheelSpeed, ControlType.kVelocity);
+          pc_Left2.setReference(turnWheelSpeed, ControlType.kVelocity);
+          pc_Right1.setReference(-normalSpeed, ControlType.kVelocity);
+          pc_Right2.setReference(-normalSpeed, ControlType.kVelocity);
+          break;
+        case "Left":
+        case "left":
+        case "L":
+        case "l":
+          System.out.println("left");
+          normalSpeed = robotSpeed;
+          turnWheelSpeed = robotSpeed + turnSpeed;
+          pc_Left1.setReference(normalSpeed, ControlType.kVelocity);
+          pc_Left2.setReference(normalSpeed, ControlType.kVelocity);
+          pc_Right1.setReference(-turnWheelSpeed, ControlType.kVelocity);
+          pc_Right2.setReference(-turnWheelSpeed, ControlType.kVelocity);
+          break;
+        default:
+          System.out.println("You did not give a direction.");
+      }
+    }
+    else if (Math.abs(currentYaw) >= targetAngle) {
+      System.out.println("Finished.");
+      m_DriveTrain.stopMotor();
+      e_Right1.setPosition(0);
+      e_Right2.setPosition(0);
+      e_Left1.setPosition(0);
+      e_Left2.setPosition(0);
+      checkedYaw = false;
+      autoCounter++;
+    };
+    
+  }
+
+  public void GalacticCourseColor(){
+    if (Coordinate_Y >= 500){
+      GalacticColor = "blue";
+    }
+    else{
+      GalacticColor = "red";
+    }
+  }
+
+  public void GalacticAlignment (){
+    if (Coordinate_X < 440){
+      leftTurn(1);
+    }
+    if (Coordinate_X > 500){
+      rightTurn(1);
+    }
+    if (Coordinate_X >= 450 && Coordinate_X <= 500){
+      autoCounter++;
+    }
+  }
     //endregion
 
 }
 
   
-
 
 
 
