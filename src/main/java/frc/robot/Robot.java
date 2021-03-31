@@ -187,8 +187,6 @@ public class Robot extends TimedRobot {
         public int autoCase;
         public int autoCounter = 0;
         public boolean resetYaw = false;
-
-        public Boolean checkedYaw = false;
         public String GalacticColor;
      
 
@@ -615,7 +613,7 @@ public class Robot extends TimedRobot {
           rightTurn(45);
           break;
         case 8:
-          driveBack(8, 500);
+          driveStraight(-8, 500);
           break;
       }
     }
@@ -658,15 +656,15 @@ public class Robot extends TimedRobot {
       if (autoCounter == 0){
   smartTurn("l", 500, 86, 500);
       }else if(autoCounter == 1){
-  driveBack(5, 500);
+  driveStraight(-5, 500);
       }else if(autoCounter == 2){
   smartTurn("r", -500, 86, -800);
       }else if(autoCounter == 3){
-  driveBack(.5, 500);
+  driveStraight(-.5, 500);
       }else if(autoCounter == 4){
   smartTurn("r", -500, 88, -800);
       }else if(autoCounter == 5){
-  driveBack(6.7, 500);
+  driveStraight(-6.7, 500);
       }else if(autoCounter == 6){
   driveStraight(5, 500);
       }else if(autoCounter == 7){
@@ -678,7 +676,7 @@ public class Robot extends TimedRobot {
       }else if(autoCounter == 10){
   smartTurn("r", -500, 86, -800);
       }else if(autoCounter == 11){
-  driveBack(2, 500);
+  driveStraight(-2, 500);
       }
 }
 
@@ -1053,27 +1051,6 @@ public class Robot extends TimedRobot {
 
       }
     }
-    
-    public void driveBack(double feet, double speed){
-      double encoderFeet = feet * 6.095233693;
-      if(e_Left1.getPosition() > -encoderFeet || e_Left2.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet || e_Right2.getPosition() < encoderFeet){
-        pc_Left1.setReference(-speed, ControlType.kVelocity);
-        pc_Left2.setReference(-speed, ControlType.kVelocity);
-        pc_Right1.setReference(speed, ControlType.kVelocity);
-        pc_Right2.setReference(speed, ControlType.kVelocity);
-      }
-      else{
-        m_DriveTrain.stopMotor();
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        //resets the encoder counts for the following methods
-
-        autoCounter ++;
-
-      }
-    }
   
     public void rightTurn(double targetAngle){
       if(resetYaw == false){
@@ -1131,9 +1108,9 @@ public class Robot extends TimedRobot {
     
     /*public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
       // Flip checked to true after one iteration, prevents continuous checking
-      if (checkedYaw == false) {
+      if (resetYaw == false) {
         navX.zeroYaw();
-        checkedYaw = true;
+        resetYaw = true;
       }
 
 
@@ -1201,7 +1178,7 @@ public class Robot extends TimedRobot {
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
-        checkedYaw = false;
+        resetYaw = false;
         autoCounter++;
       };
       
@@ -1211,9 +1188,9 @@ public class Robot extends TimedRobot {
 
    public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
     // Flip checked to true after one iteration, prevents continuous checking
-    if (checkedYaw == false) {
+    if (resetYaw == false) {
       navX.zeroYaw();
-      checkedYaw = true;
+      resetYaw = true;
     }
     
     //continuously check yaw offset since last zeroYaw set to 0
@@ -1273,7 +1250,7 @@ public class Robot extends TimedRobot {
       e_Right2.setPosition(0);
       e_Left1.setPosition(0);
       e_Left2.setPosition(0);
-      checkedYaw = false;
+      resetYaw = false;
       autoCounter++;
     };
     
