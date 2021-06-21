@@ -1085,6 +1085,33 @@ else{
         pc_Right2.setReference(-1000, ControlType.kVelocity);
       }
     }
+	public void getLimelight(){
+      NetworkTable limeTable = ntwrkInst.getTable("limelight");
+      double rawLimeX = limeTable.getNumber("tx", 1000);
+      return rawLimeX
+    }
+    public void shootBallsWithAccuracy(){
+      double finalValue = getLimelight();
+      if (finalValue > 0){
+        pc_Left1.setReference(-1000, ControlType.kVelocity);
+        pc_Left2.setReference(-1000, ControlType.kVelocity);
+        pc_Right1.setReference(-1000, ControlType.kVelocity);
+        pc_Right2.setReference(-1000, ControlType.kVelocity);
+      }else if(finalValue < 0){
+        pc_Left1.setReference(1000, ControlType.kVelocity);
+        pc_Left2.setReference(1000, ControlType.kVelocity);
+        pc_Right1.setReference(1000, ControlType.kVelocity);
+        pc_Right2.setReference(1000, ControlType.kVelocity);
+      }
+      if (Math.abs(finalValue) < 3){
+        m_DriveTrain.stopMotor();
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+      }
+      }
+    }
 	public void slalomPath(){
 	      if (autoCounter == 0){
 		smartTurn("l", 500, 86, 500);
