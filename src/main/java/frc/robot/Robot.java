@@ -18,6 +18,7 @@ import com.revrobotics.*;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 //region_Imports
@@ -1085,10 +1086,10 @@ else{
         pc_Right2.setReference(-1000, ControlType.kVelocity);
       }
     }
-	public void getLimelight(){
+	public double getLimelight(){
       NetworkTable limeTable = ntwrkInst.getTable("limelight");
-      double rawLimeX = limeTable.getNumber("tx", 1000);
-      return rawLimeX
+      double rawLimeX = limeTable.getEntry("tx").getDouble(1000);
+      return rawLimeX;
     }
     public void shootBallsWithAccuracy(){
       double finalValue = getLimelight();
@@ -1112,34 +1113,6 @@ else{
         pc_Right2.setReference(1000, ControlType.kVelocity);
       }
       }
-    }
-	public void slalomPath(){
-	      if (autoCounter == 0){
-		smartTurn("l", 500, 86, 500);
-	      }else if(autoCounter == 1){
-		driveBack(5, 500);
-	      }else if(autoCounter == 2){
-		smartTurn("r", -500, 86, -800);
-	      }else if(autoCounter == 3){
-		driveBack(.5, 500);
-	      }else if(autoCounter == 4){
-		smartTurn("r", -500, 88, -800);
-	      }else if(autoCounter == 5){
-		driveBack(6.7, 500);
-	      }else if(autoCounter == 6){
-		driveStraight(5, 500);
-	      }else if(autoCounter == 7){
-		smartTurn("l", 500, 88, 500);
-	      }else if(autoCounter == 8){
-		smartTurn("l", 500, 88, 700);
-	      }else if(autoCounter == 9){
-		driveStraight(5.6, 500);
-	      }else if(autoCounter == 10){
-		smartTurn("r", -500, 86, -800);
-	      }else if(autoCounter == 11){
-		driveBack(2, 500);
-	      }
-	}
     
     //endregion
 
