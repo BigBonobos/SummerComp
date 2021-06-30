@@ -18,7 +18,7 @@ import com.revrobotics.*;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
+//import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 //region_Imports
@@ -1091,27 +1091,32 @@ else{
       double rawLimeX = limeTable.getEntry("tx").getDouble(1000);
       return rawLimeX;
     }
-    public void shootBallsWithAccuracy(){
+    public boolean shootBallsWithAccuracy(){
       double finalValue = getLimelight();
+      boolean isAligned = false;
       if (Math.abs(finalValue) < 3){
         m_DriveTrain.stopMotor();
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
         e_Right1.setPosition(0);
         e_Right2.setPosition(0);
+        isAligned = true;
       }
       else if (finalValue > 0){
         pc_Left1.setReference(-1000, ControlType.kVelocity);
         pc_Left2.setReference(-1000, ControlType.kVelocity);
         pc_Right1.setReference(-1000, ControlType.kVelocity);
         pc_Right2.setReference(-1000, ControlType.kVelocity);
+        isAligned = false;
       }
       else if(finalValue < 0){
         pc_Left1.setReference(1000, ControlType.kVelocity);
         pc_Left2.setReference(1000, ControlType.kVelocity);
         pc_Right1.setReference(1000, ControlType.kVelocity);
         pc_Right2.setReference(1000, ControlType.kVelocity);
+        isAligned = false;
       }
+      return isAligned;
       }
     
     //endregion
