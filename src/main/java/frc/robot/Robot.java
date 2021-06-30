@@ -145,15 +145,15 @@ public class Robot extends TimedRobot {
     
   }
 
-  @Override
+   @Override
   public void teleopInit() {
- 
+    e_Right1.setPosition(0);
+    e_Left1.setPosition(0);
   }
 
   @Override
   public void teleopPeriodic() {
-    
-  }
+	  
 
   @Override
   public void testInit() {
