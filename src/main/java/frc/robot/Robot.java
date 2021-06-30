@@ -154,7 +154,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 	  
-
+  }
   @Override
   public void testInit() {
    
@@ -186,7 +186,7 @@ public void driveStraight(double feet, double speed){
     
 	public void driveBack(double feet, double speed){
       double encoderFeet = feet * 6.095233693;
-      if(e_Left1.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet ||){
+      if(e_Left1.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet){
         pc_Left1.setReference(-speed, ControlType.kVelocity);
         pc_Right1.setReference(speed, ControlType.kVelocity);
 
@@ -245,6 +245,7 @@ public void driveStraight(double feet, double speed){
         pc_Right1.setReference(-1000, ControlType.kVelocity);
       }
     }
+  }
     
    
 
