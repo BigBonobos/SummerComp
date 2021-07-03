@@ -1095,7 +1095,7 @@ else{
       double finalValue = getLimelight();
       boolean isAligned = false;
       if (Math.abs(finalValue) < 3){
-        m_DriveTrain.stopMotor();
+        //m_DriveTrain.stopMotor();
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
         e_Right1.setPosition(0);
@@ -1118,6 +1118,19 @@ else{
       }
       return isAligned;
       }
+    public void align(){
+      double xValue = getLimelight();
+      boolean isAligned = false;
+      if (Math.abs(xValue) <= 3){
+        isAligned = true;
+      }
+      else{
+        isAligned = false;
+      }
+      while (isAligned == false){
+        isAligned = shootBallsWithAccuracy();
+      }
+    }
     
     //endregion
 
