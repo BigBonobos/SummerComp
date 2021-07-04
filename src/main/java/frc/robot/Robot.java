@@ -150,9 +150,10 @@ public class Robot extends TimedRobot {
     //logic variables
 
       //gear switching
-        public boolean lowGear=true;
-        public boolean switchGears;
-      
+        //public boolean lowGear=true;
+        public boolean lowGear;
+        //public boolean switchGears;
+
       //intake booleans
         public boolean intakeExtended = false;
 
@@ -187,8 +188,6 @@ public class Robot extends TimedRobot {
         public int autoCase;
         public int autoCounter = 0;
         public boolean resetYaw = false;
-
-        public Boolean checkedYaw = false;
         public String GalacticColor;
      
 
@@ -388,6 +387,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    lowGear = true; 
     m_Feeder.setIdleMode(CANSparkMax.IdleMode.kBrake);
     e_Right1.setPosition(0);
     e_Right2.setPosition(0);
@@ -399,13 +399,16 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     gettingVision();
 
-    //if/else series controlling drivetrain motors
+    /*//if/else series controlling drivetrain motors
     if (j_Right.getTrigger()){
       visionTracking();
     }
     else {
       joystickControl();
       gearSwitching();
+    }*/
+    if (j_Operator.getTrigger()){
+      gearSwitching(); 
     }
 
     //if/else series controlling intaking and shooting balls
@@ -425,14 +428,14 @@ public class Robot extends TimedRobot {
       m_BotShooter.stopMotor();
     } 
 
-    if(j_Operator.getRawButton(7)){
+    /*if(j_Operator.getRawButton(7)){
       if(targetColor == 0){
         controlPanelRevolution();
       }
       else{
         controlPanelColorSpin();
       }
-    }
+    }*/
 
     climb();
     gameData();
@@ -492,207 +495,6 @@ public class Robot extends TimedRobot {
 
   }
 
-  public void GalacticSearchCourseOne(){
-    GalacticCourseColor();
-
-    if (GalacticColor == "blue") {
-      switch (autoCounter) {
-        case 0:
-          driveStraight(15, 500);
-          break;
-        case 1: 
-          leftTurn(70);
-          break;
-        case 2:
-          GalacticAlignment();
-          break;
-        case 3: 
-         driveStraight(6, 500);
-          break;
-        case 4:
-          rightTurn(120);
-          break;
-        case 5: 
-          GalacticAlignment();
-          break;
-        case 6:
-          driveStraight(4, 500);
-        case 7:
-          leftTurn(45);
-          break;
-        case 8:
-          driveStraight(10, 500);
-          break;     
-      }
-    }
-
-    if (GalacticColor == "red"){
-      switch (autoCounter){
-        case 0:
-          driveStraight(5, 500);
-          break;
-        case 1:
-          rightTurn(45);
-          break;
-        case 2:
-          GalacticAlignment();
-          break;
-        case 3:
-          driveStraight(7, 500);
-          break;
-        case 4:
-          leftTurn(140);
-          break;
-        case 5:
-          GalacticAlignment();
-          break;
-        case 6:
-          driveStraight(12, 500);
-          break;
-        case 7:
-          rightTurn(90);
-          break;
-        case 8: 
-          driveStraight(10, 500);
-          break;
-      }
-    }
-  }
-
-  public void GalacticSearchCourseTwo(){
-    GalacticCourseColor();
-
-    if (GalacticColor == "blue") {
-      switch (autoCounter){
-        case 0: 
-          driveStraight(15, 500);
-          break;
-        case 1: 
-          leftTurn(45);
-          break;
-        case 2:
-          GalacticAlignment();
-          break;
-        case 3:
-          driveStraight(7.5, 500);
-          break;
-        case 4:
-          rightTurn(90);
-          break;
-        case 5: 
-          GalacticAlignment();
-          break;
-        case 6:
-          driveStraight(12, 500);
-          break;
-      }
-    }
-
-    if (GalacticColor == "red"){
-      switch (autoCounter){
-        case 0:
-          driveStraight(7.5, 500);
-          break;
-        case 1:
-          rightTurn(45);
-          break;
-        case 2:
-          GalacticAlignment();
-          break;
-        case 3:
-          driveStraight(8, 500);
-          break;
-        case 4:
-          leftTurn(100);
-          break;
-        case 5:
-          GalacticAlignment();
-          break;
-        case 6:
-          driveStraight(8, 500);
-          break;
-        case 7:
-          rightTurn(45);
-          break;
-        case 8:
-          driveBack(8, 500);
-          break;
-      }
-    }
-  }
-
-  public void AutoNavCourseOne(){
-
-  }
-
-  public void AutoNavCourseTwo(){
-    switch (autoCounter) {
-      case 0:
-        smartTurn("left", 60, 500, 500);
-        break;
-      case 1:
-        smartTurn("right", 60, 500, 500);
-        break;
-      case 2:
-        smartTurn("right", 130, 1000, 250);
-        break;
-      case 3:
-        smartTurn("left", 160, 500, 750);
-        break;
-      case 4:
-        smartTurn("left", 180, 500, 750);
-         break;
-      case 5:
-        smartTurn("right", 20, 500, 500);
-        break;
-      case 6:
-        smartTurn("right", 130, 1000, 250);
-        break;
-      case 7:
-        smartTurn("left", 60, 500, 500);
-         break;
-     }
-  }
-
-  public void AutoNavCourseThree(){
-      if (autoCounter == 0){
-  smartTurn("l", 500, 86, 500);
-      }else if(autoCounter == 1){
-  driveBack(5, 500);
-      }else if(autoCounter == 2){
-  smartTurn("r", -500, 86, -800);
-      }else if(autoCounter == 3){
-  driveBack(.5, 500);
-      }else if(autoCounter == 4){
-  smartTurn("r", -500, 88, -800);
-      }else if(autoCounter == 5){
-  driveBack(6.7, 500);
-      }else if(autoCounter == 6){
-  driveStraight(5, 500);
-      }else if(autoCounter == 7){
-  smartTurn("l", 500, 88, 500);
-      }else if(autoCounter == 8){
-  smartTurn("l", 500, 88, 700);
-      }else if(autoCounter == 9){
-  driveStraight(5.6, 500);
-      }else if(autoCounter == 10){
-  smartTurn("r", -500, 86, -800);
-      }else if(autoCounter == 11){
-  driveBack(2, 500);
-      }
-}
-
-  public void WebcamVision(){
-    VisionPi = ntwrkInst.getTable("VisionPi");
-    System.out.println(VisionPi.getKeys());
-
-    Coordinate_X = (VisionPi.getEntry("VisionX").getDouble(0));
-    SmartDashboard.putNumber("VisionX", Coordinate_X);
-    
-    Coordinate_Y = (VisionPi.getEntry("VisionX").getDouble(0));
-    SmartDashboard.putNumber("VisionX", Coordinate_Y);
-  }
-
   //region_Methods
     public void gettingVision(){
       chameleonVision = ntwrkInst.getTable("chameleon-vision");
@@ -706,7 +508,7 @@ public class Robot extends TimedRobot {
 
     }  
 
-    public void joystickControl(){ //method for implementing our lowgear/highgear modes into our driver controls
+    /*public void joystickControl(){ //method for implementing our lowgear/highgear modes into our driver controls
       if(lowGear){
         m_DriveTrain.tankDrive(j_Left.getY() * .7, -j_Right.getY() * .7);
         //m_DriveTrain.tankDrive(j_XboxController.getY(Hand.kLeft)*.75, -j_XboxController.getY(Hand.kRight)*.75);
@@ -715,9 +517,9 @@ public class Robot extends TimedRobot {
         m_DriveTrain.tankDrive(j_Left.getY(), -j_Right.getY());
         //m_DriveTrain.tankDrive(j_XboxController.getY(Hand.kLeft), -j_XboxController.getY(Hand.kRight));
       }
-    }
+    }*/
 
-    public void gearSwitching(){ //method for switching our bot to lowgear(less sensitive) or highgear(speedyboi)
+    /*public void gearSwitching(){ //method for switching our bot to lowgear(less sensitive) or highgear(speedyboi)
       if(j_Right.getRawButton(2) && switchGears || j_XboxController.getTriggerAxis(Hand.kLeft) >.5 && switchGears ){
         if(lowGear){
           lowGear = false;
@@ -730,6 +532,16 @@ public class Robot extends TimedRobot {
       }
       else if(j_Right.getRawButton(2) || j_XboxController.getTriggerAxis(Hand.kLeft) > .5){
         switchGears = true;
+      }
+    }*/
+    public void gearSwitching() {
+      if (lowGear = false){
+        m_DriveTrain.tankDrive(j_Left.getY() * .7, -j_Right.getY() * .7);
+        lowGear = true;
+      }
+      else{
+        m_DriveTrain.tankDrive(j_Left.getY(), -j_Right.getY());
+        lowGear = false;
       }
     }
 
@@ -1021,42 +833,34 @@ public class Robot extends TimedRobot {
     } 
 
 	public void driveStraight(double feet, double speed){
+
+      //change encoder distance to feet (I didn't write this lmao -R)
       double encoderFeet = feet * 6.095233693;
-      if(e_Left1.getPosition() < encoderFeet || e_Left2.getPosition() < encoderFeet || e_Right1.getPosition() > -encoderFeet || e_Right2.getPosition() > -encoderFeet){
+
+      //flip speed if negative
+      if (feet < 0) {
+        speed = -speed;
+      }
+
+      //check by absolute value to make sure pos is changing the right distance
+      if(Math.abs(e_Left1.getPosition()) < encoderFeet || Math.abs(e_Left2.getPosition()) < encoderFeet || Math.abs(e_Right1.getPosition()) > -encoderFeet || Math.abs(e_Right2.getPosition()) > -encoderFeet){
+        
+        // left needs to be opposite of right
         pc_Left1.setReference(speed, ControlType.kVelocity);
         pc_Left2.setReference(speed, ControlType.kVelocity);
         pc_Right1.setReference(-speed, ControlType.kVelocity);
         pc_Right2.setReference(-speed, ControlType.kVelocity);
       }
       else{
+
+        //stop the motors and reset the encoder counts for the following methods
         m_DriveTrain.stopMotor();
         e_Right1.setPosition(0);
         e_Right2.setPosition(0);
         e_Left1.setPosition(0);
         e_Left2.setPosition(0);
-        //resets the encoder counts for the following methods
 
-        autoCounter ++;
-
-      }
-    }
-    
-    public void driveBack(double feet, double speed){
-      double encoderFeet = feet * 6.095233693;
-      if(e_Left1.getPosition() > -encoderFeet || e_Left2.getPosition() > -encoderFeet || e_Right1.getPosition() < encoderFeet || e_Right2.getPosition() < encoderFeet){
-        pc_Left1.setReference(-speed, ControlType.kVelocity);
-        pc_Left2.setReference(-speed, ControlType.kVelocity);
-        pc_Right1.setReference(speed, ControlType.kVelocity);
-        pc_Right2.setReference(speed, ControlType.kVelocity);
-      }
-      else{
-        m_DriveTrain.stopMotor();
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        //resets the encoder counts for the following methods
-
+        //increment upward
         autoCounter ++;
 
       }
@@ -1116,182 +920,10 @@ public class Robot extends TimedRobot {
       }
     }
     
-    /*public void extraSmartTurn(String direction, double targetAngle, double targetRadius, double fps) {
-      // Flip checked to true after one iteration, prevents continuous checking
-      if (checkedYaw == false) {
-        navX.zeroYaw();
-        checkedYaw = true;
-      }
-
-
-      //continuously check yaw offset since last zeroYaw set to 0
-      double currentYaw = navX.getYaw() % 360;
-      System.out.println("Current yaw: " + currentYaw);
-      System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
-      /*
-      Radius Calculation:
-      outsideWheelSpeed = (robotSpeed + turnSpeed) 
-      insideWheelSpeed = robotSpeed
-
-               outsideWheelSpeed + insideWheelSpeed
-      Radius = ------------------------------------ * distance between the wheels
-               outsideWheelSpeed - insideWheelSpeed
-
-      
-                        (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
-      insideWheel =   - ------------------------------------------------------ , 
-                                     WANTED RADIUS + width
-
-      
-
-
-      double targetSpeed = fps * (30 * Math.PI);
-      //double insideWheelSpeed = - ((((25/12) * fps) - (targetRadius * fps)) / (targetRadius + (25/12)))
-      double insideWheelSpeed = (fps - ((25/12) * targetRadius)) * (30 * Math.PI);
-
-      
-      if (Math.abs(currentYaw) < targetAngle) {
-        switch (direction) {
-          case "Right":
-          case "right":
-          case "R":
-          case "r":
-            System.out.println("right");
-            // faster (outside)
-            pc_Left1.setReference(targetSpeed, ControlType.kVelocity);
-            pc_Left2.setReference(targetSpeed, ControlType.kVelocity);
-            //slower (inside)
-            pc_Right1.setReference(-insideWheelSpeed, ControlType.kVelocity);
-            pc_Right2.setReference(-insideWheelSpeed, ControlType.kVelocity);
-            break;
-          case "Left":
-          case "left":
-          case "L":
-          case "l":
-            System.out.println("left");
-            //faster (outside)
-            pc_Right1.setReference(-targetSpeed, ControlType.kVelocity);
-            pc_Right2.setReference(-targetSpeed, ControlType.kVelocity);
-            //slower (inside)
-            pc_Left1.setReference(insideWheelSpeed, ControlType.kVelocity);
-            pc_Left2.setReference(insideWheelSpeed, ControlType.kVelocity);
-            
-            break;
-          default:
-            System.out.println("You did not give a direction.");
-        }
-      }
-      else if (Math.abs(currentYaw) >= targetAngle) {
-        System.out.println("Finished.");
-        m_DriveTrain.stopMotor();
-        e_Right1.setPosition(0);
-        e_Right2.setPosition(0);
-        e_Left1.setPosition(0);
-        e_Left2.setPosition(0);
-        checkedYaw = false;
-        autoCounter++;
-      };
-      
-    }*/
-
-
-
-   public void smartTurn(String direction, double targetAngle, double robotSpeed, double turnSpeed) {
-    // Flip checked to true after one iteration, prevents continuous checking
-    if (checkedYaw == false) {
-      navX.zeroYaw();
-      checkedYaw = true;
-    }
-    
-    //continuously check yaw offset since last zeroYaw set to 0
-    double currentYaw = navX.getYaw() % 360;
-    System.out.println("Current yaw: " + currentYaw);
-    System.out.println("Distance from target angle: " + (targetAngle - Math.abs(currentYaw)));
-    /*
-    Radius Calculation:
-    outsideWheelSpeed = (robotSpeed + turnSpeed) 
-    insideWheelSpeed = robotSpeed
-             outsideWheelSpeed + insideWheelSpeed
-    Radius = ------------------------------------ * distance between the wheels
-             outsideWheelSpeed - insideWheelSpeed
-    
-                      (width * outsideSpeed) - (WANTED RADIUS * outsideSpeed)
-    insideWheel =   - ------------------------------------------------------ , 
-                                   WANTED RADIUS + width
-    */
-
-    
-    if (Math.abs(currentYaw) < targetAngle) {
-      double normalSpeed;
-      double turnWheelSpeed;
-      switch (direction) {
-        case "Right":
-        case "right":
-        case "R":
-        case "r":
-          System.out.println("right");
-          normalSpeed = robotSpeed;
-          turnWheelSpeed = robotSpeed + turnSpeed;
-          pc_Left1.setReference(turnWheelSpeed, ControlType.kVelocity);
-          pc_Left2.setReference(turnWheelSpeed, ControlType.kVelocity);
-          pc_Right1.setReference(-normalSpeed, ControlType.kVelocity);
-          pc_Right2.setReference(-normalSpeed, ControlType.kVelocity);
-          break;
-        case "Left":
-        case "left":
-        case "L":
-        case "l":
-          System.out.println("left");
-          normalSpeed = robotSpeed;
-          turnWheelSpeed = robotSpeed + turnSpeed;
-          pc_Left1.setReference(normalSpeed, ControlType.kVelocity);
-          pc_Left2.setReference(normalSpeed, ControlType.kVelocity);
-          pc_Right1.setReference(-turnWheelSpeed, ControlType.kVelocity);
-          pc_Right2.setReference(-turnWheelSpeed, ControlType.kVelocity);
-          break;
-        default:
-          System.out.println("You did not give a direction.");
-      }
-    }
-    else if (Math.abs(currentYaw) >= targetAngle) {
-      System.out.println("Finished.");
-      m_DriveTrain.stopMotor();
-      e_Right1.setPosition(0);
-      e_Right2.setPosition(0);
-      e_Left1.setPosition(0);
-      e_Left2.setPosition(0);
-      checkedYaw = false;
-      autoCounter++;
-    };
-    
-  }
-
-  public void GalacticCourseColor(){
-    if (Coordinate_Y >= 500){
-      GalacticColor = "blue";
-    }
-    else{
-      GalacticColor = "red";
-    }
-  }
-
-  public void GalacticAlignment (){
-    if (Coordinate_X < 440){
-      leftTurn(1);
-    }
-    if (Coordinate_X > 500){
-      rightTurn(1);
-    }
-    if (Coordinate_X >= 450 && Coordinate_X <= 500){
-      autoCounter++;
-    }
-  }
-    //endregion
-
+    //end region
 }
 
   
-
 
 
 
