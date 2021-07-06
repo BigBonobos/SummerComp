@@ -81,7 +81,6 @@ public class Robot extends TimedRobot {
       public CANEncoder e_RightWinch = m_RightWinch.getEncoder();
 
 
-
     //neo pidcontrollers
       public CANPIDController pc_Left1 = m_Left1.getPIDController();
       public CANPIDController pc_Left2 = m_Left2.getPIDController();
@@ -148,6 +147,9 @@ public class Robot extends TimedRobot {
       public double dist;
 
     //logic variables
+      public boolean intakeOn = false;
+      public boolean shooterOn = false;
+      public int i = 0; 
 
       //gear switching
         //public boolean lowGear=true;
@@ -339,49 +341,36 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_Feeder.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    extendShooter();
+    e_Right1.setPosition(0);
+    e_Right2.setPosition(0);
+    e_Left1.setPosition(0);
+    e_Left1.setPosition(0);
+    autoCase = 1; 
   }
 
   @Override
   public void autonomousPeriodic() {
-    SmartDashboard.putNumber("AutoCase", 1);
-    autoCase = (int)SmartDashboard.getNumber("AutoCase", 1);
+    SmartDashboard.putNumber("AutoCase", autoCase);
+    SmartDashboard.putNumber("right encoder 1 ", e_Right1.getPosition());
+    SmartDashboard.putNumber("right encoder 2 ", e_Right2.getPosition());
+    SmartDashboard.putNumber("left encoder 1 ", e_Left1.getPosition());
+    SmartDashboard.putNumber("left encoder 2 ", e_Left2.getPosition());
 
     switch (autoCase){
       case 1:
-
-
-        if(autoCounter == 0){
-          m_BotShooter.stopMotor();
-          m_BotShooter.stopMotor();
-          rightTurn(90);
-        }
-        else if(autoCounter == 1){
-          driveStraight(5.333333333333333333333, 500);
-        }
-        else if(autoCounter == 2){
-          rightTurn(180);
-        }
-        else if(autoCounter == 3){
-          driveStraight(16.25, 500);
-          s_LeftIntake.set(true);
-          s_RightIntake.set(true);
-          intakingBalls();
-        }
-        else if(autoCounter == 4){
-          rightTurn(315);
-        }
-        else if(autoCounter == 5){
-          shootingBalls();
-        }
-        
+        driveStraight(30, 3500);
+        //autoCase++; 
         break;
       case 2:
+        align();
+        autoCase++;
         break;
       case 3:
+        shootingBalls(false);
+        autoCase++;
         break;
       default:
-
-
     }
   }
 
@@ -389,15 +378,18 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     lowGear = true; 
     m_Feeder.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    extendShooter();
     e_Right1.setPosition(0);
     e_Right2.setPosition(0);
     e_Left1.setPosition(0);
     e_Left2.setPosition(0);
+    
+
   }
 
   @Override
   public void teleopPeriodic() {
-    gettingVision();
+    //gettingVision();
 
     /*//if/else series controlling drivetrain motors
     if (j_Right.getTrigger()){
@@ -407,12 +399,62 @@ public class Robot extends TimedRobot {
       joystickControl();
       gearSwitching();
     }*/
-    if (j_Operator.getTrigger()){
+    if (j_Right.getTrigger()){
       gearSwitching(); 
     }
+    
+    if (j_Right.getRawButton(3)){
+      extendIntake();
+    }
+
+    if (j_Operator.getRawButtonPressed(1)){
+      intakeOn = intake(intakeOn);
+    }
+
+    if (j_Operator.getRawButton(2)){
+      e_Feeder.setPosition(0);
+      feeder();
+    }
+
+    if (j_Operator.getRawButton(3)){
+      shooterOn = shootingBalls(shooterOn);
+    }
+
+    if (j_Operator.getRawButton(4)){
+      ejectIntake();
+    }
+
+    if (j_Operator.getRawButton(5)){
+      e_Feeder.setPosition(0);
+      ejectFeeder();
+    }
+
+    if (j_Operator.getRawButton(6)){
+      align();
+    }
+
+    if (j_Operator.getRawButton(7)){
+      extendShooter();
+    }
+
+    if (j_Operator.getRawButton(8)){
+      e_Climb.setPosition(0);
+      hooker();
+    }
+
+    if (j_Operator.getRawButton(9)){
+      e_RightWinch.setPosition(0);
+      pullGame();
+    }
+
+    
+    
+    
+
+
 
     //if/else series controlling intaking and shooting balls
-    if (j_Operator.getRawButton(1)){
+    /*if (j_Operator.getRawButton(1)){
       intakingBalls();
       oldBallBoolean = newBallBoolean;
     }
@@ -426,7 +468,7 @@ public class Robot extends TimedRobot {
       m_TopShooter.setIdleMode(CANSparkMax.IdleMode.kBrake);
       m_TopShooter.stopMotor();
       m_BotShooter.stopMotor();
-    } 
+    } */
 
     /*if(j_Operator.getRawButton(7)){
       if(targetColor == 0){
@@ -437,13 +479,13 @@ public class Robot extends TimedRobot {
       }
     }*/
 
-    climb();
-    gameData();
-    controlPanelExtend();
-    tiltingControl();
-    ballCounterReset();
-    lidarDistance();
-    colorFinder();
+    //climb();
+    //gameData();
+    //controlPanelExtend();
+    //tiltingControl();
+    //ballCounterReset();
+    //lidarDistance();
+    //colorFinder();
 
     //region_SmartDashboard
       //values that are being put into smart dashboard
@@ -466,6 +508,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("clmib mode", climbMode);
       SmartDashboard.putBoolean("extend clmib mode", extendClimbMode);
       SmartDashboard.putBoolean("control panel extended", controlPanelExtended);
+      
       if (chameleon_Yaw > -2 && chameleon_Yaw < 2){
         SmartDashboard.putBoolean("Aligned", true);
       }
@@ -476,6 +519,60 @@ public class Robot extends TimedRobot {
     //endregion
   }
  
+  public void pullGame() {
+      pc_RightWinch.setReference(500, ControlType.kPosition);
+    
+  }
+
+  public void hooker() {
+    SmartDashboard.putNumber("winch", e_Climb.getPosition());
+    if (i== 0){
+      if(j_Operator.getRawButton(8)){
+        pc_Climb.setReference(575, ControlType.kPosition);
+        i++;
+      }
+    }
+    if (i == 1){
+      e_Climb.setPosition(0);
+      if (j_Operator.getRawButton(8)){
+        pc_Climb.setReference(-575, ControlType.kPosition);
+        i = 0;
+      }
+    }
+
+    
+  }
+
+  public void extendIntake() {
+    if (intakeExtended == false){
+      s_LeftIntake.set(true);
+      s_RightIntake.set(true);
+      intakeExtended = true;
+    }
+
+    else{
+      s_LeftIntake.set(true);
+      s_RightIntake.set(true);
+      intakeExtended = false;
+    }
+  }
+
+
+  public void feeder() {
+    pc_Feeder.setReference(10, ControlType.kPosition);
+  }
+
+  public void ejectIntake() {
+    //if(intakeExtended == true){
+        m_Intake.set(1);
+        intakeOn = true;
+      //}
+  }
+
+  public void ejectFeeder() {
+    pc_Feeder.setReference(-30, ControlType.kPosition);
+  }
+
   @Override
   public void testInit() {
     autoCounter = 0;
@@ -484,7 +581,7 @@ public class Robot extends TimedRobot {
     e_Left2.setPosition(0);
     e_Right1.setPosition(0);
     e_Right2.setPosition(0);
-
+    e_Climb.setPosition(0);
 
   
   }
@@ -492,7 +589,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-
+    /*if(j_Operator.getRawButtonPressed(1)){
+      intake();
+    }*/
+    SmartDashboard.putNumber("climb", e_Climb.getPosition());
+    SmartDashboard.putNumber("RightWinch", e_RightWinch.getPosition());
+    pc_RightWinch.setReference(1000, ControlType.kVelocity);
   }
 
   //region_Methods
@@ -545,11 +647,20 @@ public class Robot extends TimedRobot {
       }
     }
 
-    public void intake(){ //method for spinning our intake and for ejecting it
-      if(j_Operator.getRawButton(1)){
-        intakeExtended = true;
-      }
-      else{
+    public boolean intake(boolean intakeOn){ //method for spinning our intake and for ejecting it
+      //if(intakeExtended == true){
+        if (intakeOn == false){
+          m_Intake.set(1);
+          intakeOn = true;
+        }
+        else{
+          m_Intake.set(0);
+          intakeOn = false;
+        }
+        return intakeOn;
+      //}
+      
+      /*else{
         if(j_Operator.getRawButton(5)){
           m_Feeder.set(j_Operator.getY());
           m_Intake.set(-1);
@@ -569,7 +680,7 @@ public class Robot extends TimedRobot {
       else{
         s_LeftIntake.set(false);
         s_RightIntake.set(false);
-      }
+      }*/
     }    
 
     public void visionTracking() {
@@ -637,38 +748,46 @@ public class Robot extends TimedRobot {
         s_LeftIntake.set(true);
         s_RightIntake.set(true);
       }
-    }
+    } 
     
-    public void shootingBalls() {
-      ballCounter = 0;
+    public boolean shootingBalls(boolean shooterOn) {
       m_BotShooter.setIdleMode(CANSparkMax.IdleMode.kCoast);
       m_TopShooter.setIdleMode(CANSparkMax.IdleMode.kCoast);
-      if (e_BotShooter.getVelocity() > -5350){
-        m_BotShooter.set(-1);
-      }
-      else {
-        m_BotShooter.set(0);
-        readyToFeed = true;
-      }
-      if ( e_TopShooter.getVelocity() < 5350){
-        m_TopShooter.set(1);
-      }
-      else {
-        m_TopShooter.set(0);
-      }
 
-      if (readyToFeed = true){
-      m_Feeder.set(1);
+      if (shooterOn == false){
+
+        if (e_BotShooter.getVelocity() > -5350){
+          m_BotShooter.set(-1);
+        }
+        else {
+          m_BotShooter.set(0);
+          readyToFeed = true;
+        }
+        if ( e_TopShooter.getVelocity() < 5350){
+          m_TopShooter.set(1);
+        }
+        else {
+          m_TopShooter.set(0);
+        }
+        if (readyToFeed = true){
+        m_Feeder.set(1);
+        }
+        shooterOn = true;
       }
 
       else {
         m_Feeder.stopMotor();
+        m_BotShooter.setIdleMode(CANSparkMax.IdleMode.kCoast);
+        m_TopShooter.setIdleMode(CANSparkMax.IdleMode.kCoast);
+        shooterOn = false;
       }
+      return shooterOn;
     }
+    
     
     public void tiltingControl() {
       if (j_Operator.getRawButton(9)){
-        pc_Tilting.setReference(67, ControlType.kPosition);
+        pc_Tilting.setReference(40, ControlType.kPosition);
       }
   
       else if (j_Operator.getRawButton(8)){
@@ -843,7 +962,7 @@ public class Robot extends TimedRobot {
       }
 
       //check by absolute value to make sure pos is changing the right distance
-      if(Math.abs(e_Left1.getPosition()) < encoderFeet || Math.abs(e_Left2.getPosition()) < encoderFeet || Math.abs(e_Right1.getPosition()) > -encoderFeet || Math.abs(e_Right2.getPosition()) > -encoderFeet){
+      if(Math.abs(e_Left1.getPosition()) < encoderFeet || Math.abs(e_Left2.getPosition()) < encoderFeet || Math.abs(e_Right1.getPosition()) < encoderFeet || Math.abs(e_Right2.getPosition()) < encoderFeet){
         
         // left needs to be opposite of right
         pc_Left1.setReference(speed, ControlType.kVelocity);
@@ -853,6 +972,7 @@ public class Robot extends TimedRobot {
       }
       else{
 
+        autoCase++;
         //stop the motors and reset the encoder counts for the following methods
         m_DriveTrain.stopMotor();
         e_Right1.setPosition(0);
@@ -861,7 +981,6 @@ public class Robot extends TimedRobot {
         e_Left2.setPosition(0);
 
         //increment upward
-        autoCounter ++;
 
       }
     }
@@ -893,7 +1012,54 @@ public class Robot extends TimedRobot {
       }
 
     }
-
+    public void extendShooter(){
+      pc_Tilting.setReference(40, ControlType.kPosition);
+    }
+    public double getLimelight(){
+      NetworkTable limeTable = ntwrkInst.getTable("limelight");
+      double rawLimeX = limeTable.getEntry("tx").getDouble(2);
+      return rawLimeX;
+    }
+    public boolean shootBallsWithAccuracy(){
+      double finalValue = getLimelight();
+      boolean isAligned = false;
+      if (Math.abs(finalValue) < 1){
+        //m_DriveTrain.stopMotor();
+        e_Left1.setPosition(0);
+        e_Left2.setPosition(0);
+        e_Right1.setPosition(0);
+        e_Right2.setPosition(0);
+        isAligned = true;
+      }
+      else if (finalValue < 0){
+        pc_Left1.setReference(-1000, ControlType.kVelocity);
+        pc_Left2.setReference(-1000, ControlType.kVelocity);
+        pc_Right1.setReference(-1000, ControlType.kVelocity);
+        pc_Right2.setReference(-1000, ControlType.kVelocity);
+        isAligned = false;
+      }
+      else if(finalValue > 0){
+        pc_Left1.setReference(1000, ControlType.kVelocity);
+        pc_Left2.setReference(1000, ControlType.kVelocity);
+        pc_Right1.setReference(1000, ControlType.kVelocity);
+        pc_Right2.setReference(1000, ControlType.kVelocity);
+        isAligned = false;
+      }
+      return isAligned;
+      }
+    public void align(){
+      double xValue = getLimelight();
+      boolean isAligned = false;
+      if (Math.abs(xValue) <= 1){
+        isAligned = true;
+      }
+      else{
+        isAligned = false;
+      }
+      while (isAligned == false){
+        isAligned = shootBallsWithAccuracy();
+      }
+    }
     public void leftTurn(double targetAngle){
       if(resetYaw == false){
         navX.zeroYaw();
@@ -922,10 +1088,3 @@ public class Robot extends TimedRobot {
     
     //end region
 }
-
-  
-
-
-
-
-
