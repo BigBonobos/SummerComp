@@ -1,11 +1,11 @@
 //region_Copyright
 
-  /*----------------------------------------------------------------------------*/
-  /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-  /* Open Source Software - may be modified and shared by FRC teams. The code   */
-  /* must be accompanied by the FIRST BSD license file in the root directory of */
-  /* the project.                                                               */
-  /*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
 
 //endregion
 
@@ -20,12 +20,14 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Compressor;
 
 //region_Imports
 
 //regular imports
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Joystick;
@@ -63,7 +65,7 @@ public class Robot extends TimedRobot {
       public CANSparkMax m_ControlPanel = new CANSparkMax(13, MotorType.kBrushless); //when facing robot's control panel wheel from front of bot, positive power spins ccw and negative power spins cw //OG 8
       public CANSparkMax m_Climb = new CANSparkMax(3, MotorType.kBrushless); //OG 3
       public CANSparkMax m_LeftWinch = new CANSparkMax(9, MotorType.kBrushless); //OG 9
-      public CANSparkMax m_RightWinch = new CANSparkMax(4, MotorType.kBrushless); //OG 4
+      public CANSparkMax m_RightWinch = new CANSparkMax(2, MotorType.kBrushless); //OG 4
 
     //neo encoders
       public CANEncoder e_Left1 = m_Left1.getEncoder(); //positive forward for Left
@@ -80,6 +82,12 @@ public class Robot extends TimedRobot {
       public CANEncoder e_LeftWinch = m_LeftWinch.getEncoder();
       public CANEncoder e_RightWinch = m_RightWinch.getEncoder();
 
+    // Limit Switch input
+    public DigitalInput limitSwitch = new DigitalInput(0);
+    public boolean engaged;
+    public int limitCounter;
+    public boolean hasActivated = false;
+    //public Timer timer;
 
     //neo pidcontrollers
       public CANPIDController pc_Left1 = m_Left1.getPIDController();
@@ -116,9 +124,10 @@ public class Robot extends TimedRobot {
       public double kP_Climb, kI_Climb, kD_Climb, kIz_Climb, kFF_Climb;
 
     //solenoid variables
-      public Solenoid s_LeftIntake = new Solenoid(7);
-      public Solenoid s_RightIntake = new Solenoid(5);
+      public Solenoid s_LeftIntake = new Solenoid(5);
+      public Solenoid s_RightIntake = new Solenoid(7);
       public Solenoid s_ControlPanel = new Solenoid(4);
+      //public Compressor c = new Compressor(0);
 
     //navx variables
       public AHRS navX = new AHRS(SPI.Port.kMXP);
@@ -149,6 +158,7 @@ public class Robot extends TimedRobot {
     //logic variables
       public boolean intakeOn = false;
       public boolean shooterOn = false;
+      public boolean pullingOn = false;  
       public int i = 0; 
 
       //gear switching
@@ -164,6 +174,7 @@ public class Robot extends TimedRobot {
         public boolean newBallBoolean = false;
         public boolean ballDebounceBoolean = false;
         public int ballCounter = 0;
+        public int ballIndex = 0;
 
       //shooting booleans
         public boolean readyToFeed = false;
@@ -383,7 +394,10 @@ public class Robot extends TimedRobot {
     e_Right2.setPosition(0);
     e_Left1.setPosition(0);
     e_Left2.setPosition(0);
-    
+    ballIndex = 0;
+    limitCounter = 0;
+    engaged = false;
+    hasActivated = false;
 
   }
 
@@ -399,12 +413,25 @@ public class Robot extends TimedRobot {
       joystickControl();
       gearSwitching();
     }*/
+    boolean switchState = limitSwitch.get();
+    SmartDashboard.putBoolean("Intake LS", switchState);
+    SmartDashboard.putNumber("Ball Count Index", ballIndex);
+    SmartDashboard.putBoolean("Engaged", engaged);
+    SmartDashboard.putNumber("iterations", limitCounter);
+
+    if(engaged == true && switchState == true){
+      engaged = false;
+    }
+    
     if (j_Right.getTrigger()){
       gearSwitching(); 
     }
     
-    if (j_Right.getRawButton(3)){
+    if (j_Operator.getRawButton(11)){
       extendIntake();
+    }
+    if (j_Operator.getRawButton(10)){
+      retractIntake();
     }
 
     if (j_Operator.getRawButtonPressed(1)){
@@ -418,6 +445,7 @@ public class Robot extends TimedRobot {
 
     if (j_Operator.getRawButton(3)){
       shooterOn = shootingBalls(shooterOn);
+      ballIndex = 0;
     }
 
     if (j_Operator.getRawButton(4)){
@@ -443,9 +471,27 @@ public class Robot extends TimedRobot {
     }
 
     if (j_Operator.getRawButton(9)){
-      e_RightWinch.setPosition(0);
-      pullGame();
+      pullGame(400);
     }
+    
+    if(switchState == false && ballIndex < 5){
+      if(engaged == false){
+        ballIndex++;
+        engaged = true;
+        hasActivated = true;
+        //now = timer.get();
+      }
+    if (limitCounter >= 3){
+      e_Feeder.setPosition(0); 
+      feeder();
+      hasActivated = false;
+      limitCounter = 0;
+    }
+    if( hasActivated == true){
+      limitCounter++;
+    }
+    }
+
 
     
     
@@ -519,52 +565,54 @@ public class Robot extends TimedRobot {
     //endregion
   }
  
-  public void pullGame() {
-      pc_RightWinch.setReference(500, ControlType.kPosition);
-    
+  public void retractIntake() {
+    s_LeftIntake.set(false);
+    s_RightIntake.set(false);
+  }
+
+  public void pullGame(double encoder) {
+    /*if (Math.abs(e_RightWinch.getPosition()) < encoder){
+      pc_RightWinch.setReference(100, ControlType.kVelocity);
+    }
+    else {
+      //m_RightWinch.set(0);
+      m_RightWinch.stopMotor();
+    }*/
+    m_RightWinch.set(-.5);
   }
 
   public void hooker() {
-    SmartDashboard.putNumber("winch", e_Climb.getPosition());
-    if (i== 0){
-      if(j_Operator.getRawButton(8)){
-        pc_Climb.setReference(575, ControlType.kPosition);
-        i++;
-      }
-    }
-    if (i == 1){
-      e_Climb.setPosition(0);
-      if (j_Operator.getRawButton(8)){
+    SmartDashboard.putNumber("climb", e_Climb.getPosition());
+    SmartDashboard.putNumber("i-value", i);
+    if (i == 0){
         pc_Climb.setReference(-575, ControlType.kPosition);
-        i = 0;
-      }
+        SmartDashboard.putNumber("i-value1", i);
+        i++;
     }
-
+    /*if (i == 1){
+        pc_Climb.setReference(-575, ControlType.kPosition);
+        SmartDashboard.putNumber("i-value2", i);
+        i = 0;
+    }*/
     
   }
 
   public void extendIntake() {
-    if (intakeExtended == false){
+    //if (intakeExtended == false){
       s_LeftIntake.set(true);
       s_RightIntake.set(true);
-      intakeExtended = true;
-    }
-
-    else{
-      s_LeftIntake.set(true);
-      s_RightIntake.set(true);
-      intakeExtended = false;
-    }
+      //intakeExtended = true;
+    //}
   }
 
 
   public void feeder() {
-    pc_Feeder.setReference(10, ControlType.kPosition);
+    pc_Feeder.setReference(45, ControlType.kPosition);
   }
 
   public void ejectIntake() {
     //if(intakeExtended == true){
-        m_Intake.set(1);
+        m_Intake.set(-1);
         intakeOn = true;
       //}
   }
@@ -582,7 +630,6 @@ public class Robot extends TimedRobot {
     e_Right1.setPosition(0);
     e_Right2.setPosition(0);
     e_Climb.setPosition(0);
-
   
   }
 
@@ -594,7 +641,10 @@ public class Robot extends TimedRobot {
     }*/
     SmartDashboard.putNumber("climb", e_Climb.getPosition());
     SmartDashboard.putNumber("RightWinch", e_RightWinch.getPosition());
-    pc_RightWinch.setReference(1000, ControlType.kVelocity);
+    
+    while (j_Operator.getTriggerPressed()){
+      m_RightWinch.set(1);
+    }
   }
 
   //region_Methods
@@ -650,7 +700,7 @@ public class Robot extends TimedRobot {
     public boolean intake(boolean intakeOn){ //method for spinning our intake and for ejecting it
       //if(intakeExtended == true){
         if (intakeOn == false){
-          m_Intake.set(1);
+          m_Intake.set(.5);
           intakeOn = true;
         }
         else{
@@ -755,21 +805,21 @@ public class Robot extends TimedRobot {
       m_TopShooter.setIdleMode(CANSparkMax.IdleMode.kCoast);
 
       if (shooterOn == false){
-
+        
         if (e_BotShooter.getVelocity() > -5350){
           m_BotShooter.set(-1);
+          readyToFeed = true;
         }
         else {
           m_BotShooter.set(0);
-          readyToFeed = true;
         }
-        if ( e_TopShooter.getVelocity() < 5350){
+        if (e_TopShooter.getVelocity() < 5350){
           m_TopShooter.set(1);
         }
         else {
           m_TopShooter.set(0);
         }
-        if (readyToFeed = true){
+        if (readyToFeed == true){
         m_Feeder.set(1);
         }
         shooterOn = true;
@@ -787,7 +837,7 @@ public class Robot extends TimedRobot {
     
     public void tiltingControl() {
       if (j_Operator.getRawButton(9)){
-        pc_Tilting.setReference(40, ControlType.kPosition);
+        pc_Tilting.setReference(25, ControlType.kPosition);
       }
   
       else if (j_Operator.getRawButton(8)){
@@ -1013,7 +1063,7 @@ public class Robot extends TimedRobot {
 
     }
     public void extendShooter(){
-      pc_Tilting.setReference(40, ControlType.kPosition);
+      pc_Tilting.setReference(60, ControlType.kPosition);
     }
     public double getLimelight(){
       NetworkTable limeTable = ntwrkInst.getTable("limelight");
